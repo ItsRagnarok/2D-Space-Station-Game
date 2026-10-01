@@ -37,6 +37,6 @@ export default class Boot extends Phaser.Scene {
     A.create({ key: 'screen_map', frames: seq('screen_map', 4), frameRate: 3, repeat: -1 });
     A.create({ key: 'orion', frames: seq('orion', 4), frameRate: 3, repeat: -1 });
     A.create({ key: 'cryo', frames: seq('cryo_terminal', 2), frameRate: 2, repeat: -1 });
-    this.scene.start(['Hydroponics', 'Command', 'Reactor', 'Hangar'].includes(S.room) ? S.room : 'Hydroponics');
+    this.scene.start('Station');
   }
 }

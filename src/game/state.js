@@ -11,7 +11,7 @@ const fresh = () => ({
   energy: 100, res: { crystal: 0, rare: 0, flora: 0, mush: 0 },
   beds: BED_TYPES.map((type, i) => ({ type, stage: 1 + (i % 3), t: 0 })),
   crew: { farmer: false, engineer: false },
-  room: 'Hydroponics',
+  room: 'Hydroponics', pos: null,
 });
 
 function load() {

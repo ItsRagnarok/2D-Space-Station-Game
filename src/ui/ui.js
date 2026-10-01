@@ -97,7 +97,7 @@ export function initUi() {
   $('dialog').addEventListener('pointerdown', (e) => { ui.advance(); e.preventDefault(); });
 
   // ---- zoom + station map ----
-  ui.zoomBy = (d) => { const z = Math.max(-3, Math.min(3, ui.zoomOffset + d)); if (z === ui.zoomOffset) return; ui.zoomOffset = z; if (ui.onZoom) ui.onZoom(); };
+  ui.zoomBy = (d) => { const z = Math.max(-8, Math.min(4, ui.zoomOffset + d)); if (z === ui.zoomOffset) return; ui.zoomOffset = z; if (ui.onZoom) ui.onZoom(); };
   ui.openMap = () => { if (!ui.blocking && ui.onMap) ui.onMap(); };
   const tap = (id, fn) => $(id).addEventListener('pointerdown', (e) => { fn(); e.preventDefault(); });
   tap('t-zin', () => ui.zoomBy(1)); tap('t-zout', () => ui.zoomBy(-1)); tap('t-map', () => ui.openMap());

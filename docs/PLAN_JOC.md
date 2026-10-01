@@ -31,9 +31,10 @@ Progresul se salvează local și **merge doar înainte**. Singura cale înapoi e
 | S9 | Sunet | muzică ambientală, pași, uși, recoltă, alarmă, voce ORION | de făcut |
 
 ## Vedere și navigare
-- **Zoom:** rotiță de mouse, ciupire pe telefon, butoanele − / + sau tastele − / +. Când te îndepărtezi, camera plutește în spațiu, cu stele și planeta în fundal.
-- **Harta stației (M sau butonul Hartă):** toată stația văzută din spațiu, în mișcare; alegi un modul și te teleportezi acolo. Laboratorul e blocat până la Actul 3.
-- **De făcut:** controlul personajului în exterior (spacewalk cu costumul EVA) și docurile cu nave.
+- **O singură lume continuă:** toate camerele sunt alipite și legate prin coridoare reale (Hidroponică ← Comandă → Reactor, Hangar la sud, Laborator la nord). Mergi dintr-o cameră în alta fără ecrane de încărcare; ușile se deschid când te apropii.
+- **Zoom:** rotiță de mouse, ciupire pe telefon, butoanele − / + sau tastele − / +. De la foarte aproape până la toată stația în spațiu.
+- **Vederea de ansamblu (M sau butonul Hartă):** toată stația din exterior, cu interioarele vizibile, panouri solare și motoare. Alegi o cameră și te teleportezi acolo. Laboratorul e blocat până mai târziu în poveste.
+- **De făcut:** controlul personajului în exterior (spacewalk cu costumul EVA), docuri cu nave care sosesc, extinderea stației cu module noi.
 
 ## Etapele jocului (cod)
 1. **E1 Felia de bază** ✓ (cameră, personaj, cultivare, energie).
