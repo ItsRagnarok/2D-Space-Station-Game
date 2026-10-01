@@ -1,0 +1,9 @@
+{
+  "name": "asset-tools",
+  "private": true,
+  "type": "module",
+  "description": "Asset pipeline for Orbital Harvest (sprite packing). Not part of the shipped game.",
+  "devDependencies": {
+    "free-tex-packer-core": "^0.3.9"
+  }
+}
