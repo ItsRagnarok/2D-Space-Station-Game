@@ -43,7 +43,14 @@ def make_static():
 
 STATIC = None
 
-def render(t=0.0, with_people=True):
+def ambient(energy):
+    pts = [(0.0, .07), (.25, .32), (.5, .62), (.75, 1.0)]
+    if energy >= .75: return 1.0
+    for (e0, a0), (e1, a1) in zip(pts, pts[1:]):
+        if energy <= e1: return a0 + (a1 - a0) * (energy - e0) / (e1 - e0)
+    return 1.0
+
+def render(t=0.0, with_people=True, energy=1.0, flash=None):
     """t in seconds. Everything animated is a function of t so any frame can be rendered."""
     global STATIC
     if STATIC is None:
@@ -126,6 +133,39 @@ def render(t=0.0, with_people=True):
     glow(sc, 40, 128, 18, ORANGE[3], .3); glow(sc, 168, 142, 16, ORANGE[3], .22)
     glow(sc, 228, 140, 20, GREEN[3], .35)
     glow(sc, 100, 44, 40, ORANGE[3], .18)
+    # ---- low-energy rule: the station goes dark; only the flashlight (and weak emergency lamps) remain ----
+    a = ambient(energy)
+    if a < 1.0:
+        lit = sc.copy()
+        for y in range(H):
+            for x in range(W):
+                p = sc.getpixel((x, y))
+                sc.putpixel((x, y), (int(p[0] * a), int(p[1] * a), int(p[2] * a + (1 - a) * 6), 255))
+        if flash:
+            (fx, fy), (dx, dy) = flash
+            n = math.hypot(dx, dy); dx, dy = dx / n, dy / n
+            R, cosmax = 84.0, math.cos(math.radians(30))
+            for y in range(max(0, int(fy - R)), min(H, int(fy + R))):
+                for x in range(max(0, int(fx - R)), min(W, int(fx + R))):
+                    vx, vy = x - fx, y - fy
+                    d = math.hypot(vx, vy)
+                    if d < 1: continue
+                    cosang = (vx * dx + vy * dy) / d
+                    i = 0.0
+                    if d < R and cosang > cosmax:
+                        i = (1 - d / R) ** .7 * (.55 + .45 * (cosang - cosmax) / (1 - cosmax))
+                    if d < 12: i = max(i, .55 - d / 30)       # small halo around the carrier
+                    lvl = i + (bay(x, y) - .5) * .22
+                    f = 1.0 if lvl > .60 else .72 if lvl > .40 else .46 if lvl > .20 else 0
+                    if f:
+                        q = lit.getpixel((x, y)); cur = sc.getpixel((x, y))
+                        warm = (min(255, int(q[0] * 1.06)), int(q[1] * 1.0), int(q[2] * .86))
+                        sc.putpixel((x, y), tuple(max(cur[i2], int(warm[i2] * f)) for i2 in range(3)) + (255,))
+        if energy < .5:        # emergency lamps: red, slow blink
+            on = int(t * 1.5) % 2 == 0
+            for (x, y) in ((8, 60), (8, 104), (150, 44), (300, 44), (30, 150)):
+                glow(sc, x, y, 14 if on else 8, RED[2], .9 if on else .35)
+                px(sc, x, y, RED[2] if on else RED[0])
     # strong vignette in dithered steps: dark, cold edges keep the eye on the lit centre
     for y in range(H):
         for x in range(W):
