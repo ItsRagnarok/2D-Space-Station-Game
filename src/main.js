@@ -1,9 +1,10 @@
 import Phaser from 'phaser';
 import SpaceScene from './scenes/SpaceScene.js';
 
-// Pixel-art look: the game renders at a small logical resolution and the canvas
-// is stretched with nearest-neighbour filtering (see index.html CSS).
-const PIXEL = 3; // one game pixel = 3 screen pixels
+// The game renders at the real screen size so motion is sub-pixel smooth; the
+// pixel-art look comes from scaling the art up (see ART in SpaceScene) with
+// nearest-neighbour filtering.
+const PIXEL = 1;
 const logicalSize = () => ({
   width: Math.max(120, Math.ceil(window.innerWidth / PIXEL)),
   height: Math.max(120, Math.ceil(window.innerHeight / PIXEL)),

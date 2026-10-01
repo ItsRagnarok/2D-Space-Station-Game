@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 
-const WORLD = 8000; // big map (in game pixels); wraps seamlessly
-const TILE = 256;
+const ART = 3; // one art pixel = 3 screen pixels (chunky look, smooth motion)
+const TILE = 256; // texture tile size in art pixels
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map((v) => v / 16);
 
 // Few stars, dim. Farther layers move slower.
@@ -23,24 +23,24 @@ export default class SpaceScene extends Phaser.Scene {
     const { width, height } = this.scale;
 
     this.nebula = this.add.tileSprite(0, 0, width, height, 'nebula')
-      .setOrigin(0).setScrollFactor(0).setDepth(-90);
+      .setOrigin(0).setScrollFactor(0).setDepth(-90).setTileScale(ART);
 
     this.starLayers = STAR_LAYERS.map((cfg, i) => ({
       cfg,
       sprite: this.add.tileSprite(0, 0, width, height, cfg.key)
-        .setOrigin(0).setScrollFactor(0).setDepth(-80 + i),
+        .setOrigin(0).setScrollFactor(0).setDepth(-80 + i).setTileScale(ART),
     }));
 
-    this.planet = this.add.image(0, 0, '__DEFAULT').setDepth(-70).setScrollFactor(0);
+    this.planet = this.add.image(0, 0, '__DEFAULT').setDepth(-70).setScrollFactor(0).setScale(ART);
     this.planetR = 0;
-    this.moon = this.add.image(0, 0, 'moon').setDepth(-69).setScrollFactor(0);
+    this.moon = this.add.image(0, 0, 'moon').setDepth(-69).setScrollFactor(0).setScale(ART);
     this.planetFactor = 0.1;
 
     this.streaks = [];
     this.time.addEvent({ delay: 5000, loop: true, callback: () => this.spawnStreak() });
 
     this.cam = this.cameras.main;
-    this.pos = new Phaser.Math.Vector2(WORLD / 2, WORLD / 2);
+    this.pos = new Phaser.Math.Vector2(0, 0); // unbounded map, tiles repeat forever
     this.startPos = this.pos.clone();
     this.vel = new Phaser.Math.Vector2(0, 0);
     this.driftAngle = 0;
@@ -77,8 +77,8 @@ export default class SpaceScene extends Phaser.Scene {
     this.starLayers.forEach((l) => l.sprite.setSize(w, h));
     this.cam.setSize(w, h);
 
-    // Big planet: radius is ~38% of the short screen side.
-    const R = Phaser.Math.Clamp(Math.round(Math.min(w, h) * 0.38), 40, 150);
+    // Planet radius in art pixels: ~17% of the short screen side (medium, not huge).
+    const R = Phaser.Math.Clamp(Math.round((Math.min(w, h) / ART) * 0.17), 16, 60);
     if (R !== this.planetR) {
       this.planetR = R;
       if (this.textures.exists('planet')) this.textures.remove('planet');
@@ -92,8 +92,8 @@ export default class SpaceScene extends Phaser.Scene {
 
     // Slow, never perfectly straight glide.
     this.driftAngle += dt * 0.05;
-    const dx = 5 + Math.cos(this.driftAngle) * 2;
-    const dy = 2 + Math.sin(this.driftAngle * 0.7) * 2;
+    const dx = 12 + Math.cos(this.driftAngle) * 4;
+    const dy = 5 + Math.sin(this.driftAngle * 0.7) * 4;
 
     if (!this.dragging) {
       this.vel.x += (dx - this.vel.x) * Math.min(1, dt * 1.5);
@@ -101,37 +101,35 @@ export default class SpaceScene extends Phaser.Scene {
       this.pos.x += this.vel.x * dt;
       this.pos.y += this.vel.y * dt;
     }
-    this.pos.x = Phaser.Math.Wrap(this.pos.x, 0, WORLD);
-    this.pos.y = Phaser.Math.Wrap(this.pos.y, 0, WORLD);
 
     const { width, height } = this.scale;
 
-    this.nebula.tilePositionX = Math.floor(this.pos.x * 0.05);
-    this.nebula.tilePositionY = Math.floor(this.pos.y * 0.05);
+    this.nebula.tilePositionX = (this.pos.x * 0.05) / ART;
+    this.nebula.tilePositionY = (this.pos.y * 0.05) / ART;
     this.starLayers.forEach(({ cfg, sprite }, i) => {
-      sprite.tilePositionX = Math.floor(this.pos.x * cfg.factor);
-      sprite.tilePositionY = Math.floor(this.pos.y * cfg.factor);
+      sprite.tilePositionX = (this.pos.x * cfg.factor) / ART;
+      sprite.tilePositionY = (this.pos.y * cfg.factor) / ART;
       // Stepped twinkle (two brightness levels) to keep the pixel feel.
       sprite.alpha = Math.sin(time / (700 + i * 450) + i * 2) > 0.2 ? 1 : 0.65;
     });
 
     // Big planet, partly off the top-right edge, drifting very slowly.
-    const px = Math.round(width * 0.66 - (this.pos.x - this.startPos.x) * this.planetFactor);
-    const py = Math.round(height * 0.3 - (this.pos.y - this.startPos.y) * this.planetFactor);
+    const px = width * 0.68 - (this.pos.x - this.startPos.x) * this.planetFactor;
+    const py = height * 0.24 - (this.pos.y - this.startPos.y) * this.planetFactor;
     this.planet.setPosition(px, py);
 
     const ang = time * 0.00005;
     this.moon.setPosition(
-      Math.round(px + Math.cos(ang) * this.planetR * 1.9),
-      Math.round(py + Math.sin(ang) * this.planetR * 0.45 + this.planetR * 0.3),
+      px + Math.cos(ang) * this.planetR * ART * 1.9,
+      py + Math.sin(ang) * this.planetR * ART * 0.45 + this.planetR * ART * 0.3,
     );
     this.moon.setDepth(Math.sin(ang) > 0 ? -68 : -71);
 
     for (let i = this.streaks.length - 1; i >= 0; i--) {
       const s = this.streaks[i];
       s.life -= dt;
-      s.obj.x = Math.round(s.obj.x + s.v * dt);
-      s.obj.y = Math.round(s.obj.y + s.v * dt);
+      s.obj.x += s.v * dt;
+      s.obj.y += s.v * dt;
       s.obj.alpha = s.life > 0.2 ? 1 : Math.max(0, s.life / 0.2);
       if (s.life <= 0) {
         s.obj.destroy();
@@ -143,8 +141,8 @@ export default class SpaceScene extends Phaser.Scene {
   spawnStreak() {
     const { width, height } = this.scale;
     const obj = this.add.image(this.rng.between(0, width), this.rng.between(-10, height * 0.35), 'streak')
-      .setScrollFactor(0).setDepth(-60).setOrigin(1, 1);
-    this.streaks.push({ obj, v: this.rng.between(120, 180), life: 0.9 });
+      .setScrollFactor(0).setDepth(-60).setOrigin(1, 1).setScale(ART);
+    this.streaks.push({ obj, v: this.rng.between(360, 520), life: 0.9 });
   }
 
   // ---------- Procedural pixel art ----------
