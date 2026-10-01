@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 
-const ART = 3; // one art pixel = 3 screen pixels (chunky look, smooth motion)
+const ART = 2; // one art pixel = 2 screen pixels (fine pixels, smooth motion)
+const MOON_R = 8; // moon radius in art pixels; the planet body is never bigger than this
 const TILE = 256; // texture tile size in art pixels
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map((v) => v / 16);
 
@@ -77,8 +78,8 @@ export default class SpaceScene extends Phaser.Scene {
     this.starLayers.forEach((l) => l.sprite.setSize(w, h));
     this.cam.setSize(w, h);
 
-    // Planet radius in art pixels: ~17% of the short screen side (medium, not huge).
-    const R = Phaser.Math.Clamp(Math.round((Math.min(w, h) / ART) * 0.17), 16, 60);
+    // Planet body is the same size as its moon (the ring makes it look wider).
+    const R = MOON_R;
     if (R !== this.planetR) {
       this.planetR = R;
       if (this.textures.exists('planet')) this.textures.remove('planet');
@@ -120,8 +121,8 @@ export default class SpaceScene extends Phaser.Scene {
 
     const ang = time * 0.00005;
     this.moon.setPosition(
-      px + Math.cos(ang) * this.planetR * ART * 1.9,
-      py + Math.sin(ang) * this.planetR * ART * 0.45 + this.planetR * ART * 0.3,
+      px + Math.cos(ang) * this.planetR * ART * 3.4,
+      py + Math.sin(ang) * this.planetR * ART * 0.9 + this.planetR * ART * 0.5,
     );
     this.moon.setDepth(Math.sin(ang) > 0 ? -68 : -71);
 
@@ -203,7 +204,7 @@ export default class SpaceScene extends Phaser.Scene {
 
     // Small moon (3-tone pixel disc).
     {
-      const R = 6; const S = R * 2 + 1;
+      const R = MOON_R; const S = R * 2 + 1;
       const { tex, g } = this.canvasTex('moon', S, S);
       const tones = ['#14141c', '#262735', '#4a4c63', '#7a7d99'];
       for (let y = 0; y < S; y++) {
