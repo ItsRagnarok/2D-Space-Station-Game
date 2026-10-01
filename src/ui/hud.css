@@ -1,0 +1,25 @@
+#ui { position: fixed; inset: 0; pointer-events: none; font-family: 'Rajdhani', sans-serif; font-weight: 600; color: #d8fff0; user-select: none; -webkit-user-select: none; }
+.panel { position: absolute; background: rgba(3, 22, 20, .86); border: 2px solid #2fe58a; border-radius: 6px; box-shadow: 0 0 12px rgba(47, 229, 138, .3); padding: 6px 10px; }
+#energy { left: max(10px, env(safe-area-inset-left)); top: 10px; min-width: 190px; }
+#energy .name { font-size: 13px; letter-spacing: 1.5px; color: #2fe58a; text-transform: uppercase; font-weight: 700; display: flex; justify-content: space-between; gap: 12px; }
+#energy .bar { height: 10px; margin: 5px 0 3px; background: #04231c; border: 1px solid #1f8a5c; position: relative; }
+#energy .bar i { position: absolute; left: 0; top: 0; bottom: 0; background: repeating-linear-gradient(90deg, var(--c, #2fe58a) 0 5px, transparent 5px 6px); transition: width .3s; }
+#energy .state { font-size: 13px; color: var(--c, #2fe58a); }
+#res { right: max(10px, env(safe-area-inset-right)); top: 10px; display: grid; grid-template-columns: auto auto; gap: 4px 12px; font-size: 16px; }
+#res div { display: flex; align-items: center; gap: 6px; }
+#res img, .ic { width: 16px; height: 16px; image-rendering: pixelated; object-fit: contain; }
+#prompt { left: 50%; bottom: 14px; transform: translateX(-50%); font-size: 17px; text-align: center; max-width: 52vw; opacity: 0; transition: opacity .15s; }
+#prompt.show { opacity: 1; }
+#toast { left: 50%; top: 54px; transform: translateX(-50%); font-size: 18px; border-color: #f2b84b; color: #ffe8a0; opacity: 0; transition: opacity .25s; }
+#toast.show { opacity: 1; }
+#help { left: 50%; top: 8px; transform: translateX(-50%); font-size: 12px; color: #8fb7aa; border: 0; background: none; box-shadow: none; white-space: nowrap; }
+.touch #help { display: none; }
+#stick { position: absolute; left: max(22px, env(safe-area-inset-left)); bottom: 22px; width: 120px; height: 120px; border: 3px solid #2fe58a; border-radius: 50%; background: rgba(3, 22, 20, .45); pointer-events: auto; touch-action: none; display: none; }
+#stick i { position: absolute; left: 36px; top: 36px; width: 48px; height: 48px; border-radius: 50%; background: #2fe58a; opacity: .8; }
+.touch #stick { display: block; }
+.btn { position: absolute; pointer-events: auto; touch-action: none; display: none; align-items: center; justify-content: center; text-align: center; border-radius: 50%; border: 3px solid #2fe58a; background: rgba(3, 22, 20, .6); color: #2fe58a; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; }
+.touch .btn { display: flex; }
+#act { right: max(26px, env(safe-area-inset-right)); bottom: 26px; width: 92px; height: 92px; font-size: 16px; background: #2fe58a; color: #02150e; }
+#fl { right: calc(max(26px, env(safe-area-inset-right)) + 104px); bottom: 26px; width: 56px; height: 56px; font-size: 12px; }
+#rotate { position: fixed; inset: 0; background: #02050a; display: none; align-items: center; justify-content: center; text-align: center; font-size: 22px; color: #2fe58a; pointer-events: auto; z-index: 10; padding: 24px; }
+@media (orientation: portrait) and (max-width: 900px) { #rotate { display: flex; } }
