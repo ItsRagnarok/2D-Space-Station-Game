@@ -62,6 +62,22 @@ def _leg(im, x0, top, bottom, pal):
         px(im, x0, y, pal['O']); px(im, x0 + 3, y, pal['O'])
         px(im, x0 + 1, y, body); px(im, x0 + 2, y, body)
 
+def _leg_side(im, hip_x, top, bottom, foot_dx, pal, far=False):
+    """Side-view leg: slants from the hip to the foot; boot has a toe pointing right (forward)."""
+    body = pal['p'] if far else pal['P']
+    n = max(1, bottom - top)
+    for y in range(top, bottom + 1):
+        x0 = hip_x + int(round(foot_dx * (y - top) / n))
+        k = bottom - y
+        if k == 0:
+            for dx in range(0, 5): px(im, x0 + dx, y, pal['O'])
+            continue
+        col = pal['B'] if k in (1, 2) else (pal['p'] if k == 3 else body)
+        px(im, x0, y, pal['O'])
+        for dx in (1, 2): px(im, x0 + dx, y, col)
+        if k in (1, 2): px(im, x0 + 3, y, col); px(im, x0 + 4, y, pal['O'])
+        else: px(im, x0 + 3, y, pal['O'])
+
 def frame_img(outfit='station', dirn='down', anim='idle', frame=0):
     pal = _pal(outfit)
     torso = _torso_img(dirn, outfit)
@@ -81,8 +97,8 @@ def frame_img(outfit='station', dirn='down', anim='idle', frame=0):
     else:
         patch = torso.crop((8, 11, 11, 14))
         out = torso.copy(); ImageDraw.Draw(out).rectangle([8, 11, 10, 13], fill=CLEAR)
-        dy = {0: 0, 1: -1, 2: 0, 3: 1}[frame % 4] if anim == 'walk' else (-1 if anim == 'act' else 0)
-        dx = (1 + frame % 2) if anim == 'act' else 0
+        dy = 0 if anim == 'walk' else (-1 if anim == 'act' else 0)
+        dx = ((1 + frame % 2) if anim == 'act' else {0: -1, 1: 0, 2: 1, 3: 0}[frame % 4] if anim == 'walk' else 0)
         out.alpha_composite(patch, (8 + dx, 11 + dy)); torso = out
 
     im = new(W_, H_)
@@ -98,12 +114,15 @@ def frame_img(outfit='station', dirn='down', anim='idle', frame=0):
             if frame % 4 == 3: ra = floor - 1
         _leg(im, lx, top, la, pal); _leg(im, rx, top, ra, pal)
     else:
+        hx = OX + 4
         if anim == 'walk':
-            cfg = {0: (OX + 1, OX + 6, floor, floor), 1: (OX + 3, OX + 4, floor, floor - 1), 2: (OX + 6, OX + 1, floor, floor), 3: (OX + 4, OX + 3, floor, floor - 1)}[frame % 4]
-            back_x, front_x, bb, fb = cfg
-            _leg(im, back_x, top, bb, pal); _leg(im, front_x, top, fb, pal)
+            f = frame % 4
+            near_dx, far_dx = {0: (3, -3), 1: (0, 0), 2: (-3, 3), 3: (0, 0)}[f]
+            near_b = floor - (1 if f == 1 else 0); far_b = floor - (1 if f == 3 else 0)
+            _leg_side(im, hx, top, far_b, far_dx, pal, far=True)     # far leg first, near leg on top
+            _leg_side(im, hx, top, near_b, near_dx, pal)
         else:
-            _leg(im, OX + 3, top, floor, pal); _leg(im, OX + 4, top, floor, pal)
+            _leg_side(im, hx - 1, top, floor, 0, pal, far=True); _leg_side(im, hx, top, floor, 0, pal)
     if outfit == 'eva':   # derived overlays: helmet lamp + shoulder stripes
         if dirn == 'down': px(im, OX + 2, OY + 2 - bob, rgb('#fff6b0')); px(im, OX + 9, OY + 2 - bob, rgb('#fff6b0'))
         if dirn == 'right': px(im, OX + 9, OY + 2 - bob, rgb('#fff6b0'))

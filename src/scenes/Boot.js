@@ -1,4 +1,7 @@
 import Phaser from 'phaser';
+import { initUi, ui } from '../ui/ui.js';
+import { initControls } from '../ui/controls.js';
+import { S, on, energyState } from '../game/state.js';
 
 export default class Boot extends Phaser.Scene {
   constructor() { super('Boot'); }
@@ -9,9 +12,11 @@ export default class Boot extends Phaser.Scene {
   }
 
   create() {
+    initUi(); initControls();
+    on('energy', (e) => { const [l, c] = energyState(e); ui.setEnergy(e, l, c); });
     const A = this.anims;
     const seq = (name, n) => Array.from({ length: n }, (_, i) => ({ key: 'o', frame: `${name}_${i}` }));
-    for (const outfit of ['station', 'eva']) {
+    for (const outfit of ['station', 'eva', 'yellow', 'green']) {
       for (const dir of ['down', 'up', 'right']) {
         const base = `odysseus_${outfit}_${dir}`;
         A.create({ key: `${base}_idle`, frames: seq(`${base}_idle`, 2), frameRate: 2, repeat: -1 });
@@ -24,6 +29,12 @@ export default class Boot extends Phaser.Scene {
     A.create({ key: 'console', frames: seq('console', 4), frameRate: 3, repeat: -1 });
     A.create({ key: 'drone', frames: seq('drone', 2), frameRate: 12, repeat: -1 });
     A.create({ key: 'sparkle', frames: seq('sparkle', 2), frameRate: 4, repeat: -1 });
-    this.scene.start('Hydroponics');
+    A.create({ key: 'reactor_on', frames: seq('reactor_on', 4), frameRate: 6, repeat: -1 });
+    A.create({ key: 'ship_idle', frames: seq('ship', 3), frameRate: 6, repeat: -1 });
+    A.create({ key: 'space_gate', frames: seq('space_gate', 2), frameRate: 1, repeat: -1 });
+    A.create({ key: 'screen_map', frames: seq('screen_map', 4), frameRate: 3, repeat: -1 });
+    A.create({ key: 'orion', frames: seq('orion', 4), frameRate: 3, repeat: -1 });
+    A.create({ key: 'cryo', frames: seq('cryo_terminal', 2), frameRate: 2, repeat: -1 });
+    this.scene.start(['Hydroponics', 'Command', 'Reactor', 'Hangar'].includes(S.room) ? S.room : 'Hydroponics');
   }
 }

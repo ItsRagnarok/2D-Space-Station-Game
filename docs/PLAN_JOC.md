@@ -6,11 +6,22 @@
 - Controale: tastatură (WASD), mouse (click stânga acțiune, click dreapta lanternă), joystick și butoane pe telefon. PWA pentru ecran complet pe iPhone.
 - Forja de asset-uri (`tools/assets/forge/`): un master per asset, variante derivate din cod (oglindire, recolorare, scalare), atlas pentru joc.
 
+## Starea actelor (în joc acum)
+Progresul se salvează local și **merge doar înainte**. Singura cale înapoi e *Meniu → Reset total* (cu confirmare), care șterge tot și reîncepe de la Actul 1.
+
+| Act | Ce se poate juca acum | Ce lipsește |
+|---|---|---|
+| 1 Trezirea | complet: recoltare, bio-generator, lanternă, intrare în comandă | nimic |
+| 2 Echipajul | complet: alimentat reactorul, trezit Fermierul și Inginerul (bonusuri reale), vizitat hangarul | nimic |
+| 3 Semnalul | decodat semnalul (masa holografică), pregătită nava Meridian | „Trimite prima expediție" (E6) |
+| 4 Amenințarea | doar introducerea | luptă și apărarea stației (E7) |
+| 5 Marea Recoltă | doar introducerea | alegerea finală (E9) |
+
 ## Seturile de asset-uri (în ordinea construirii)
 | # | Set | Conține | Stare |
 |---|---|---|---|
 | S1 | Personaje | Odysseus ✓, costum EVA ✓ (de integrat), 5 membri de echipaj (recolorări + trăsături), portrete pentru dialog, poze: cară, repară, rănit | parțial |
-| S2 | Camere de stație | hidroponică ✓, laborator (scena există, de integrat), **reactor**, **hangar**, **comandă**, depozit, **criosomn/cabine**, infirmerie, atelier; coridoare, uși, ecluze | parțial |
+| S2 | Camere de stație | hidroponică ✓, **reactor ✓, hangar ✓, comandă ✓** (uși, terminal ORION, terminal criosomn, masă holografică, navă, fereastră spre spațiu), laborator (scena există, de integrat), depozit, infirmerie, atelier | parțial |
 | S3 | Stația din spațiu | module văzute de sus, panouri solare, antene, docuri, propulsoare (stația navighează), lumini; piese modulare pentru extindere | de făcut |
 | S4 | Nave | nava jucătorului (16 unghiuri din Blender), cargo, scout, miner, 3 nave pirat, sateliți abandonați; variante în hangar (3/4) | de făcut |
 | S5 | Spațiu și lumi | asteroizi, 3 planete (peșteri cu cristale, junglă toxică, gheață), teren de explorare, interior de stație abandonată | de făcut |
@@ -21,7 +32,7 @@
 
 ## Etapele jocului (cod)
 1. **E1 Felia de bază** ✓ (cameră, personaj, cultivare, energie).
-2. **E2 Stația ca hartă:** mai multe camere legate prin uși, tranziții, minihartă; reactorul ca sursă reală de energie.
+2. **E2 Stația ca hartă** ✓ (4 camere legate prin uși, reactor ca sursă de energie); lipsește minihărta.
 3. **E3 Salvare și conturi:** progres salvat local, apoi cont (Supabase) pentru telefon/PC.
 4. **E4 Echipajul:** criosomn, trezirea colegilor, roluri care deblochează camere.
 5. **E5 Hangar și nave:** nave care sosesc și pleacă, marfă, reparații.

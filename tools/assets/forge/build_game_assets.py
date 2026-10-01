@@ -2,7 +2,7 @@
 Run:  python3 build_game_assets.py      (from tools/assets/forge)  -> ../../../public/assets/"""
 import os, json, math
 from core import *
-import odysseus, hydroponics, objects as o
+import odysseus, hydroponics, station_rooms, objects as o
 from scene_base import floor_tile, wall_panel, hazard_strip
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
@@ -11,10 +11,12 @@ os.makedirs(os.path.join(OUT, 'icons'), exist_ok=True)
 
 sprites = {}
 # character: station suit + spacewalk suit (left = mirrored at runtime)
-for outfit in ('station', 'eva'):
+for outfit in ('station', 'eva', 'yellow', 'green'):    # yellow/green = crew, recoloured from the same masters
     sprites.update(odysseus.all_frames(outfit))
 # hydroponics set
 sprites.update(hydroponics.all_sprites())
+sprites.update(station_rooms.all_sprites())
+for i in range(12): sprites[f'globe_{i:02d}'] = o.globe(i * math.pi * 2 / 12)
 # shared props reused from the research module
 for i in range(4): sprites[f'console_{i}'] = o.console(i)
 for i in range(2):
