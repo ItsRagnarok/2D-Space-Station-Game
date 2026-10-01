@@ -53,7 +53,8 @@ export default class Command {
         ui.dialog([{ who: 'ORION', text: `${cr.name} se trezește din criosomn.` }, { who: cr.name, text: `Unde… Odysseus? Bine. Am pierdut timp. Bonus: ${cr.gain}.` }]);
       } });
 
-    c.prop('console_0', 120, 196, { w: 44, h: 10 }, 'console'); c.prop('console_1', 264, 196, { w: 44, h: 10 }, 'console');
+    c.prop('console_0', 120, 196, { w: 44, h: 10 }, 'console');
+    c.prop('locker_1', 18, 100, { w: 14, h: 12 }); c.prop('locker_0', 366, 100, { w: 14, h: 12 }); c.prop('console_1', 264, 196, { w: 44, h: 10 }, 'console');
     c.light({ x: 120, y: 184, s: 0.7, a: 0.45, power: true }); c.light({ x: 264, y: 184, s: 0.7, a: 0.45, power: true });
   }
 

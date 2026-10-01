@@ -34,6 +34,8 @@ export default class Hangar {
     c.sprite(47, 186, 'crate_steel', { origin: [0.5, 1], z: c.Y(199) }); c.shade(47, 198, 40);
     c.prop('console_0', 110, 52, { w: 44, h: 10 }, 'console'); c.light({ x: 110, y: 40, s: 0.8, a: 0.5, power: true });
     c.prop('rack_0', 30, 52, { w: 18, h: 10 });
+    c.prop('bench_1', 336, 196, { w: 40, h: 12 }); c.shade(336, 196, 44); c.prop('locker_0', 366, 190, { w: 14, h: 12 });
+    [[168, 120], [292, 120], [168, 200], [292, 200]].forEach(([x, y]) => c.light({ x, y, s: 0.45, a: 0.4, glow: 0xff9a2a, ga: 0.28 }));
   }
   onEnter() { S.flags.visitedHangar = true; }
 }

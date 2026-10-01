@@ -12,6 +12,8 @@ export default class Reactor {
     c.prop('console_0', 80, 52, { w: 44, h: 10 }, 'console'); c.prop('console_1', 304, 52, { w: 44, h: 10 }, 'console');
     c.light({ x: 80, y: 40, s: 0.8, a: 0.5, power: true }); c.light({ x: 304, y: 40, s: 0.8, a: 0.5, power: true });
     c.prop('tank', 330, 120, { w: 22, h: 10 }); c.prop('tank', 354, 124, { w: 22, h: 10 });
+    c.prop('locker_0', 36, 100, { w: 14, h: 12 }); c.prop('locker_1', 54, 100, { w: 14, h: 12 }); c.light({ x: 45, y: 80, s: 0.8, a: 0.5, glow: 0xe8902a, ga: 0.22 });
+    c.prop('rack_1', 340, 196, { w: 18, h: 10 });
     c.prop('crate_orange', 40, 190, { w: 16, h: 10 }); c.prop('crate_steel', 58, 192, { w: 16, h: 10 });
 
     this.core = c.prop('reactor_off', 192, 150, { w: 44, h: 18 }); c.shade(192, 150, 62);

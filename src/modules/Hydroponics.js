@@ -26,6 +26,8 @@ export default class Hydroponics {
     c.light({ x: 160, y: 40, s: 0.8, a: 0.5, power: true }); c.light({ x: 208, y: 40, s: 0.8, a: 0.5, power: true });
     c.prop('rack_0', 262, 52, { w: 18, h: 10 }); c.prop('rack_1', 284, 52, { w: 18, h: 10 });
     c.prop('pipes_v', 376, 118, { w: 10, h: 104 });
+    c.prop('bench_0', 330, 100, { w: 40, h: 12 }); c.shade(330, 100, 44); c.light({ x: 330, y: 84, s: 0.7, a: 0.5, power: true, glow: 0x3ed06a, ga: 0.16 });
+    c.prop('locker_0', 14, 100, { w: 14, h: 12 });
     c.prop('crate_steel', 36, 200, { w: 16, h: 10 }); c.prop('crate_orange', 54, 202, { w: 16, h: 10 });
     c.sprite(45, 190, 'crate_steel', { origin: [0.5, 1], z: c.Y(203) }); c.shade(45, 202, 40);
 

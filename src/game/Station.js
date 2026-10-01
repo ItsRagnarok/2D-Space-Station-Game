@@ -87,24 +87,42 @@ export default class Station extends Phaser.Scene {
 
   buildModule(def) {
     const { ox, oy } = def, cls = def.cls, gaps = def.gaps || {};
-    const rt = this.add.renderTexture(ox - B, oy - B, RW + 2 * B, RH + 2 * B).setOrigin(0).setDepth(0);
+    const PAD = B + 4, acc = def.accent || 0x25d0cf;
+    const rt = this.add.renderTexture(ox - PAD, oy - PAD, RW + 2 * PAD, RH + 2 * PAD).setOrigin(0).setDepth(0);
     const opts = { originX: 0, originY: 0 };
     const rnd = new Phaser.Math.RandomDataGenerator([def.key]);
     const special = cls.SPECIALS || {};
-    for (let ty = 0; ty < 11; ty++) for (let tx = 0; tx < 24; tx++) rt.stamp('o', special[`${tx},${ty}`] || `floor_${rnd.between(0, 5)}`, B + tx * 16, B + 44 + ty * 16, opts);
-    for (let x = 0; x < RW; x += 120) rt.stamp('o', 'wall_120', B + x, B, opts);
+    for (let ty = 0; ty < 11; ty++) for (let tx = 0; tx < 24; tx++) rt.stamp('o', special[`${tx},${ty}`] || `floor_${rnd.between(0, 5)}`, PAD + tx * 16, PAD + 44 + ty * 16, opts);
+    for (let x = 0; x < RW; x += 120) rt.stamp('o', 'wall_120', PAD + x, PAD, opts);
+    const fr = (color, x, y, w, h, a = 1) => rt.fill(color, a, x - (ox - PAD), y - (oy - PAD), w, h);
 
-    // hull ring with openings, painted once into the same texture
-    const fr = (color, x, y, w, h) => rt.fill(color, 1, x - (ox - B), y - (oy - B), w, h);
-    const strip = (x, y, w, h) => {
+    // floor detail: darker perimeter band with accent studs, orange light trails, recessed panels
+    const rd = new Phaser.Math.RandomDataGenerator([def.key + 'd']);
+    fr(0x12151a, ox, oy + 44, 6, RH - 44, 0.8); fr(0x12151a, ox + RW - 6, oy + 44, 6, RH - 44, 0.8); fr(0x12151a, ox, oy + RH - 6, RW, 6, 0.8);
+    for (let i = 52; i < RH - 8; i += 16) { fr(acc, ox + 2, oy + i, 2, 2); fr(acc, ox + RW - 4, oy + i, 2, 2); }
+    for (let i = 8; i < RW - 8; i += 16) fr(acc, ox + i, oy + RH - 4, 2, 2);
+    for (let x = 24; x < RW - 24; x += 14) { fr(0xffc455, ox + x, oy + RH - 14, 8, 1); fr(0xb0580f, ox + x, oy + RH - 13, 8, 1); }
+    for (let y = 60; y < RH - 20; y += 14) { fr(0xffc455, ox + 12, oy + y, 1, 8, 0.8); fr(0xffc455, ox + RW - 13, oy + y, 1, 8, 0.8); }
+    for (let i = 0; i < 8; i++) {
+      const x = rd.between(24, RW - 90), y = rd.between(62, RH - 44), w = rd.between(26, 60), h = rd.between(14, 30);
+      fr(0x0e1014, ox + x, oy + y, w, h, 0.5); fr(0x4e5562, ox + x, oy + y, w, 1, 0.6); fr(0x4e5562, ox + x, oy + y, 1, h, 0.6);
+      fr(acc, ox + x + 2, oy + y + 2, 2, 1, 0.9);
+    }
+
+    // hull ring with openings and a neon inner edge, painted once into the same texture
+    const strip = (x, y, w, h, side) => {
       fr(0x1a1d24, x, y, w, h); fr(0x2e333d, x + 1, y + 1, w - 2, h - 2); fr(0x4e5562, x + 1, y + 1, w - 2, 1);
-      if (w > h) for (let i = x + 6; i < x + w - 6; i += 24) fr(0xe8902a, i, y + 4, 6, 2); else for (let i = y + 6; i < y + h - 6; i += 24) fr(0xe8902a, x + 4, i, 2, 6);
+      if (side === 'l') fr(acc, x + w - 1, y, 1, h); else if (side === 'r') fr(acc, x, y, 1, h); else if (side === 'b') fr(acc, x, y, w, 1); else fr(acc, x, y + h - 1, w, 1);
+      if (w > h) for (let i = x + 6; i < x + w - 6; i += 24) fr(acc, i, y + 4, 6, 2); else for (let i = y + 6; i < y + h - 6; i += 24) fr(acc, x + 4, i, 2, 6);
     };
-    segments(0, RH, gaps.left || []).forEach(([a, b]) => { strip(ox - B, oy + a, B, b - a); this.solid(ox - B / 2, oy + (a + b) / 2, B, b - a); });
-    segments(0, RH, gaps.right || []).forEach(([a, b]) => { strip(ox + RW, oy + a, B, b - a); this.solid(ox + RW + B / 2, oy + (a + b) / 2, B, b - a); });
-    segments(-B, RW + B, gaps.bottom || []).forEach(([a, b]) => { strip(ox + a, oy + RH, b - a, B); this.solid(ox + (a + b) / 2, oy + RH + B / 2, b - a, B); });
+    const glow = (x, y, w, h, side) => [0.34, 0.18, 0.08].forEach((al, k) => {
+      if (side === 'l') fr(acc, x - 1 - k, y, 1, h, al); else if (side === 'r') fr(acc, x + w + k, y, 1, h, al); else if (side === 'b') fr(acc, x, y + h + k, w, 1, al); else fr(acc, x, y - 1 - k, w, 1, al);
+    });
+    segments(0, RH, gaps.left || []).forEach(([a, b]) => { strip(ox - B, oy + a, B, b - a, 'l'); glow(ox - B, oy + a, B, b - a, 'l'); this.solid(ox - B / 2, oy + (a + b) / 2, B, b - a); });
+    segments(0, RH, gaps.right || []).forEach(([a, b]) => { strip(ox + RW, oy + a, B, b - a, 'r'); glow(ox + RW, oy + a, B, b - a, 'r'); this.solid(ox + RW + B / 2, oy + (a + b) / 2, B, b - a); });
+    segments(-B, RW + B, gaps.bottom || []).forEach(([a, b]) => { strip(ox + a, oy + RH, b - a, B, 'b'); glow(ox + a, oy + RH, b - a, B, 'b'); this.solid(ox + (a + b) / 2, oy + RH + B / 2, b - a, B); });
     const doorRanges = (def.topDoors || []).map((d) => [d.x - 16, d.x + 16]);
-    segments(-B, RW + B, doorRanges).forEach(([a, b]) => strip(ox + a, oy - B, b - a, B));
+    segments(-B, RW + B, doorRanges).forEach(([a, b]) => { strip(ox + a, oy - B, b - a, B, 't'); glow(ox + a, oy - B, b - a, B, 't'); });
     // back wall solids, with a gap for every door
     segments(0, RW, doorRanges).forEach(([a, b]) => this.solid(ox + (a + b) / 2, oy + 20, b - a, 60));
     (def.topDoors || []).forEach((d) => this.addDoor(ox + d.x, oy, d));
@@ -131,6 +149,9 @@ export default class Station extends Phaser.Scene {
       rt.fill(0x1a1d24, 1, rx - x, ry - y, rw, rh); rt.fill(0x2e333d, 1, rx - x + 1, ry - y + 1, rw - 2, rh - 2); rt.fill(0xe8902a, 1, rx - x + 1, ry - y + 1, rw - 2, 1);
       this.solid(rx + rw / 2, ry + rh / 2, rw, rh);
     };
+    const mx = (c.x0 + c.x1) / 2, my = (c.y0 + c.y1) / 2;
+    if (H) for (let xx = c.x0 + 4; xx < c.x1 - 4; xx += 12) { rt.fill(0xffc455, 1, xx - x, my - y, 7, 1); rt.fill(0xb0580f, 1, xx - x, my - y + 1, 7, 1); }
+    else for (let yy = c.y0 + 4; yy < c.y1 - 4; yy += 12) { rt.fill(0xffc455, 1, mx - x, yy - y, 1, 7); rt.fill(0xb0580f, 1, mx - x + 1, yy - y, 1, 7); }
     if (H) { rail(c.x0 + B, c.y0 - pad, c.x1 - c.x0 - 2 * B, pad); rail(c.x0 + B, c.y1, c.x1 - c.x0 - 2 * B, pad); }
     else { rail(c.x0 - pad, c.y0 + B, pad, c.y1 - c.y0 - 2 * B); rail(c.x1, c.y0 + B, pad, c.y1 - c.y0 - 2 * B); }
     const dark = this.add.renderTexture(c.x0, c.y0, c.x1 - c.x0, c.y1 - c.y0).setOrigin(0).setDepth(900);
