@@ -13,7 +13,7 @@ const logicalSize = () => ({
 const game = new Phaser.Game({
   type: Phaser.AUTO,
   parent: 'game',
-  backgroundColor: '#04050b',
+  backgroundColor: '#000000',
   ...logicalSize(),
   scale: { mode: Phaser.Scale.NONE },
   pixelArt: true,

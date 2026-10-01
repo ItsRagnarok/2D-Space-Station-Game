@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
 
 const ART = 2; // one art pixel = 2 screen pixels (fine pixels, smooth motion)
-const MOON_R = 8; // moon radius in art pixels; the planet body is never bigger than this
+const PLANET_R = 8; // planet body radius in art pixels
+const MOON_R = 3; // small moon orbiting the planet
 const TILE = 256; // texture tile size in art pixels
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map((v) => v / 16);
 
@@ -22,9 +23,6 @@ export default class SpaceScene extends Phaser.Scene {
     this.makeStaticTextures();
 
     const { width, height } = this.scale;
-
-    this.nebula = this.add.tileSprite(0, 0, width, height, 'nebula')
-      .setOrigin(0).setScrollFactor(0).setDepth(-90).setTileScale(ART);
 
     this.starLayers = STAR_LAYERS.map((cfg, i) => ({
       cfg,
@@ -74,12 +72,10 @@ export default class SpaceScene extends Phaser.Scene {
   onResize(size) {
     const w = size.width ?? this.scale.width;
     const h = size.height ?? this.scale.height;
-    this.nebula.setSize(w, h);
     this.starLayers.forEach((l) => l.sprite.setSize(w, h));
     this.cam.setSize(w, h);
 
-    // Planet body is the same size as its moon (the ring makes it look wider).
-    const R = MOON_R;
+    const R = PLANET_R;
     if (R !== this.planetR) {
       this.planetR = R;
       if (this.textures.exists('planet')) this.textures.remove('planet');
@@ -105,8 +101,6 @@ export default class SpaceScene extends Phaser.Scene {
 
     const { width, height } = this.scale;
 
-    this.nebula.tilePositionX = (this.pos.x * 0.05) / ART;
-    this.nebula.tilePositionY = (this.pos.y * 0.05) / ART;
     this.starLayers.forEach(({ cfg, sprite }, i) => {
       sprite.tilePositionX = (this.pos.x * cfg.factor) / ART;
       sprite.tilePositionY = (this.pos.y * cfg.factor) / ART;
@@ -119,11 +113,10 @@ export default class SpaceScene extends Phaser.Scene {
     const py = height * 0.24 - (this.pos.y - this.startPos.y) * this.planetFactor;
     this.planet.setPosition(px, py);
 
-    const ang = time * 0.00005;
-    this.moon.setPosition(
-      px + Math.cos(ang) * this.planetR * ART * 3.4,
-      py + Math.sin(ang) * this.planetR * ART * 0.9 + this.planetR * ART * 0.5,
-    );
+    const ang = time * 0.0004; // faster, so the orbit is visible
+    const ox = Math.cos(ang) * this.planetR * ART * 2.5;
+    const oy = Math.sin(ang) * this.planetR * ART * 0.7 - 0.28 * ox; // same tilt as the ring
+    this.moon.setPosition(px + ox, py + oy);
     this.moon.setDepth(Math.sin(ang) > 0 ? -68 : -71);
 
     for (let i = this.streaks.length - 1; i >= 0; i--) {
@@ -169,34 +162,6 @@ export default class SpaceScene extends Phaser.Scene {
           g.fillStyle = L.colors[0];
           g.fillRect(x - 1, y, 1, 1); g.fillRect(x + 1, y, 1, 1);
           g.fillRect(x, y - 1, 1, 1); g.fillRect(x, y + 1, 1, 1);
-        }
-      }
-      tex.refresh();
-    }
-
-    // Very dark dithered nebula, barely lighter than the void.
-    {
-      const { tex, g } = this.canvasTex('nebula', TILE, TILE);
-      const blobs = [];
-      for (let i = 0; i < 6; i++) {
-        blobs.push({
-          x: rng.between(0, TILE), y: rng.between(0, TILE),
-          r: rng.between(50, 90), c: rng.pick(['#0b0a1e', '#0e0a20', '#071420']),
-        });
-      }
-      for (let y = 0; y < TILE; y++) {
-        for (let x = 0; x < TILE; x++) {
-          let best = null; let bd = 0;
-          for (const b of blobs) {
-            const ddx = Math.min(Math.abs(x - b.x), TILE - Math.abs(x - b.x));
-            const ddy = Math.min(Math.abs(y - b.y), TILE - Math.abs(y - b.y));
-            const d = Math.max(0, 1 - Math.hypot(ddx, ddy) / b.r);
-            if (d > bd) { bd = d; best = b; }
-          }
-          if (best && bd > BAYER[(y % 4) * 4 + (x % 4)] * 0.9) {
-            g.fillStyle = best.c;
-            g.fillRect(x, y, 1, 1);
-          }
         }
       }
       tex.refresh();
