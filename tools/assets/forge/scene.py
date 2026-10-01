@@ -49,6 +49,11 @@ def render(t=0.0, with_people=True):
     if STATIC is None:
         STATIC = make_static()
     sc = STATIC.copy()
+    # deep-space ambient: darker overall, shadows pulled toward blue-black
+    for y in range(H):
+        for x in range(W):
+            p = sc.getpixel((x, y))
+            sc.putpixel((x, y), (int(p[0] * .66 + 2), int(p[1] * .70 + 4), int(p[2] * .82 + 10), p[3]))
     f2 = int(t * 2)          # 2 fps flicker
     f4 = int(t * 4)
     ph = (t / 3.0) % 1.0     # 3 s breathing for glows
@@ -113,23 +118,24 @@ def render(t=0.0, with_people=True):
 
     # ---- light ----
     k = .85 + .15 * math.sin(t * 2.1)
-    glow(sc, 141, 100, 62, BLUE[3], .95 * k)
-    glow(sc, 93, 102, 46, TEAL[3], .5 * (.8 + .2 * math.sin(ph * 6.28)))
+    glow(sc, 141, 100, 66, BLUE[3], 1.15 * k)
+    glow(sc, 93, 102, 48, TEAL[3], .62 * (.8 + .2 * math.sin(ph * 6.28)))
     for x in (150, 202, 112, 80, 28):
         glow(sc, x, 38, 26, TEAL[3], .35)
-    glow(sc, 8, 85, 24, ORANGE[3], .45); glow(sc, 8, 128, 24, ORANGE[3], .45)
+    glow(sc, 8, 85, 26, ORANGE[3], .6); glow(sc, 8, 128, 26, ORANGE[3], .6)
     glow(sc, 40, 128, 18, ORANGE[3], .3); glow(sc, 168, 142, 16, ORANGE[3], .22)
     glow(sc, 228, 140, 20, GREEN[3], .35)
     glow(sc, 100, 44, 40, ORANGE[3], .18)
-    # vignette in dithered steps to keep attention in the middle
+    # strong vignette in dithered steps: dark, cold edges keep the eye on the lit centre
     for y in range(H):
         for x in range(W):
             dx, dy2 = (x - W / 2) / (W / 2), (y - H / 2) / (H / 2)
-            v = (dx * dx * .55 + dy2 * dy2 * .8)
-            lvl = v + (bay(x, y) - .5) * .25
-            if lvl > .62:
-                p = sc.getpixel((x, y)); m = .72 if lvl > .85 else .85
-                sc.putpixel((x, y), (int(p[0] * m), int(p[1] * m), int(p[2] * m), 255))
+            v = dx * dx * .62 + dy2 * dy2 * .95
+            lvl = v + (bay(x, y) - .5) * .22
+            m = 1.0 if lvl < .30 else .82 if lvl < .46 else .64 if lvl < .62 else .46 if lvl < .80 else .30
+            if m < 1:
+                p = sc.getpixel((x, y))
+                sc.putpixel((x, y), (int(p[0] * m), int(p[1] * m), int(p[2] * m + (1 - m) * 14), 255))
     return sc
 
 if __name__ == '__main__':
