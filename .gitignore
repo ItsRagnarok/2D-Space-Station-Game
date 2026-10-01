@@ -2,3 +2,5 @@ node_modules
 dist
 android
 tools/assets/out/
+__pycache__/
+tools/assets/ref/
