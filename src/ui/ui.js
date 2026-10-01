@@ -8,7 +8,7 @@ const DEV = new URLSearchParams(location.search).has('dev');
 
 // One persistent DOM overlay shared by every room. Rooms only call the small API at the bottom.
 export const ui = {
-  isTouch: false, dev: DEV, dialogOpen: false, menuOpen: false,
+  isTouch: false, dev: DEV, dialogOpen: false, menuOpen: false, zoomOffset: 0, onZoom: null, onMap: null,
   get blocking() { return this.dialogOpen || this.menuOpen; },
 };
 
@@ -24,7 +24,9 @@ export function initUi() {
     <div id="obj" class="panel"><div class="name" id="otitle"></div><div id="olist"></div></div>
     <div id="res" class="panel">${RES.map(([k, n]) => `<div><img src="assets/icons/${k}.png" alt=""><span>${n}</span><b id="r-${k}">0</b></div>`).join('')}</div>
     <div id="menu-btn" class="panel">Meniu</div>
-    <div id="help" class="panel">WASD / săgeți · click stânga acțiune · click dreapta lanternă · Esc meniu${DEV ? ' · 1–5 energie (dev)' : ''}</div>
+    <div id="tools" class="panel"><button id="t-map">Hartă</button><button id="t-zout" aria-label="Depărtează">−</button><button id="t-zin" aria-label="Apropie">+</button></div>
+    <div id="mapinfo" class="panel"><div class="mt"></div><div class="ms"></div><div class="mb"><button id="map-go">Teleportare</button><button id="map-close">Închide harta</button></div></div>
+    <div id="help" class="panel">WASD / săgeți · click stânga acțiune · click dreapta lanternă · rotiță = zoom · M hartă · Esc meniu${DEV ? ' · 1–5 energie (dev)' : ''}</div>
     <div id="prompt" class="panel"></div><div id="toast" class="panel"></div><div id="banner"><small></small><b></b></div>
     <div id="dialog" class="panel"><div class="who"></div><div class="txt"></div><div class="next">▶ acțiune</div></div>
     <div id="menu"><div class="box panel">
@@ -93,6 +95,17 @@ export function initUi() {
     const cb = doneCb; doneCb = null; if (cb) cb();
   };
   $('dialog').addEventListener('pointerdown', (e) => { ui.advance(); e.preventDefault(); });
+
+  // ---- zoom + station map ----
+  ui.zoomBy = (d) => { const z = Math.max(-3, Math.min(3, ui.zoomOffset + d)); if (z === ui.zoomOffset) return; ui.zoomOffset = z; if (ui.onZoom) ui.onZoom(); };
+  ui.openMap = () => { if (!ui.blocking && ui.onMap) ui.onMap(); };
+  const tap = (id, fn) => $(id).addEventListener('pointerdown', (e) => { fn(); e.preventDefault(); });
+  tap('t-zin', () => ui.zoomBy(1)); tap('t-zout', () => ui.zoomBy(-1)); tap('t-map', () => ui.openMap());
+  let mapGo = null, mapClose = null;
+  ui.mapMode = (on, go, close) => { mapGo = go; mapClose = close; $('mapinfo').classList.toggle('show', false); $('t-map').textContent = on ? 'Înapoi' : 'Hartă'; };
+  ui.showMapInfo = ({ title, text, canGo }) => { const m = $('mapinfo'); m.querySelector('.mt').textContent = title; m.querySelector('.ms').textContent = text; $('map-go').style.display = canGo ? '' : 'none'; m.classList.add('show'); };
+  $('map-go').addEventListener('click', () => mapGo && mapGo());
+  $('map-close').addEventListener('click', () => mapClose && mapClose());
 
   // ---- menu ----
   const show = (id) => ['m-main', 'm-info', 'm-confirm'].forEach((m) => { $(m).style.display = m === id ? 'block' : 'none'; });

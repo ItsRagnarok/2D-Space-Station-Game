@@ -21,6 +21,9 @@ export function initControls() {
     if (k === 'e' || k === ' ' || k === 'enter') controls._act = true;
     if (k === 'f') controls._flash = true;
     if (k === 'escape') ui.toggleMenu();
+    if (k === 'm') ui.openMap();
+    if (k === '+' || k === '=') ui.zoomBy(1);
+    if (k === '-' || k === '_') ui.zoomBy(-1);
     if (ui.dev && '12345'.includes(k)) dev.set = { 1: 100, 2: 60, 3: 35, 4: 15, 5: 0 }[k];
   });
   window.addEventListener('keyup', (e) => down.delete(e.key.toLowerCase()));
@@ -33,6 +36,17 @@ export function initControls() {
     if (e.button === 2) controls._flash = true; else if (e.button === 0) controls._act = true;
   });
 
+  let wheelAt = 0;
+  game.addEventListener('wheel', (e) => { e.preventDefault(); const n = Date.now(); if (n - wheelAt < 140) return; wheelAt = n; ui.zoomBy(e.deltaY < 0 ? 1 : -1); }, { passive: false });
+  const pts = new Map(); let pinch0 = 0;
+  const dist = () => { const [a, b] = [...pts.values()]; return Math.hypot(a.x - b.x, a.y - b.y); };
+  game.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'touch') return; pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); if (pts.size === 2) pinch0 = dist(); });
+  game.addEventListener('pointermove', (e) => {
+    if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pts.size === 2 && pinch0) { const r = dist() / pinch0; if (r > 1.35) { ui.zoomBy(1); pinch0 = dist(); } else if (r < 0.74) { ui.zoomBy(-1); pinch0 = dist(); } }
+  });
+  const up = (e) => { pts.delete(e.pointerId); if (pts.size < 2) pinch0 = 0; };
+  game.addEventListener('pointerup', up); game.addEventListener('pointercancel', up);
   const stick = document.getElementById('stick'), knob = stick.querySelector('i');
   let touchVec = { x: 0, y: 0 }, pid = null;
   const move = (e) => {

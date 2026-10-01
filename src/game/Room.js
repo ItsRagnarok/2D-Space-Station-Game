@@ -24,7 +24,9 @@ export default class Room extends Phaser.Scene {
     this.setupCamera();
     this.cameras.main.fadeIn(250);
     this.scale.on('resize', this.setupCamera, this);
-    this.events.once('shutdown', () => this.scale.off('resize', this.setupCamera, this));
+    this.events.once('shutdown', () => { this.scale.off('resize', this.setupCamera, this); ui.onZoom = null; ui.onMap = null; });
+    ui.onZoom = () => this.setupCamera();
+    ui.onMap = () => { this.registry.set('resume', { room: this.scene.key, x: this.player.x, y: this.player.y }); this.registry.set('flash', this.flashlight); this.registry.set('flashAuto', this.flashAuto); this.cameras.main.fadeOut(200); this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('StationMap')); };
     ui.debugFn = () => `inner ${innerWidth}x${innerHeight} · visual ${window.visualViewport ? Math.round(window.visualViewport.width) + 'x' + Math.round(window.visualViewport.height) : '-'} · dpr ${devicePixelRatio} · game ${this.scale.width}x${this.scale.height} · zoom ${this.cameras.main.zoom} · standalone ${navigator.standalone === true}`;
     S.room = this.scene.key; save();
     ui.setRes(S.res); ui.setObjectives(objectivesView()); this.syncEnergy();
@@ -41,6 +43,15 @@ export default class Room extends Phaser.Scene {
     for (let x = 0; x < W; x += 120) rt.stamp('o', 'wall_120', x, 0, opts);
     this.solid(W / 2, 24, W, 52);
     this.physics.world.setBounds(0, 0, W, H);
+    // space around the room + the station's outer hull, so zooming out shows the room floating in space
+    this.add.tileSprite(W / 2, H / 2, 2400, 1600, 'stars_tile').setScrollFactor(0.25).setDepth(-20);
+    this.add.image(W + 230, H + 120, 'planet_rock').setScrollFactor(0.4).setDepth(-19);
+    const g = this.add.graphics().setDepth(5), B = 10;
+    [[-B, 0, B, H + B], [W, 0, B, H + B], [-B, H, W + 2 * B, B], [-B, -B, W + 2 * B, B]].forEach(([x, y, w, h]) => {
+      g.fillStyle(0x1a1d24, 1).fillRect(x, y, w, h); g.fillStyle(0x2e333d, 1).fillRect(x + 1, y + 1, w - 2, h - 2); g.fillStyle(0x4e5562, 1).fillRect(x + 1, y + 1, w - 2, 1);
+    });
+    for (let i = 8; i < W; i += 24) { g.fillStyle(0xe8902a, 1).fillRect(i, H + 4, 6, 2); g.fillStyle(0xe8902a, 1).fillRect(i, -6, 6, 2); }
+    for (let i = 8; i < H; i += 24) { g.fillStyle(0xe8902a, 1).fillRect(-6, i, 2, 6); g.fillStyle(0xe8902a, 1).fillRect(W + 4, i, 2, 6); }
   }
 
   solid(cx, cy, w, h) {
@@ -90,7 +101,9 @@ export default class Room extends Phaser.Scene {
 
   // ---------- player ----------
   buildPlayer() {
-    const sp = (this.spawns || {})[this.spawnName] || (this.spawns || {}).default || [64, 150];
+    let sp = (this.spawns || {})[this.spawnName] || (this.spawns || {}).default || [64, 150];
+    const r = this.spawnName === 'resume' && this.registry.get('resume');
+    if (r && r.room === this.scene.key) sp = [r.x, r.y];
     this.player = this.physics.add.sprite(sp[0], sp[1], 'o', 'odysseus_station_down_idle_0').setOrigin(0.5, 0.92);
     this.player.body.setSize(8, 6).setOffset(4, 17);
     this.player.setCollideWorldBounds(true);
@@ -132,7 +145,7 @@ export default class Room extends Phaser.Scene {
   setupCamera() {
     const cam = this.cameras.main, vv = window.visualViewport;
     const cssH = Math.min(this.scale.height, window.innerHeight, vv ? vv.height : Infinity);   // iOS can report stale/bigger values
-    const z = Phaser.Math.Clamp(Math.round(cssH / 190), 2, 5);
+    const z = Phaser.Math.Clamp(Phaser.Math.Clamp(Math.round(cssH / 190), 2, 5) + ui.zoomOffset, 1, 7);
     cam.setZoom(z);
     const vw = cam.width / z, vh = cam.height / z;
     cam.setBounds(vw > W ? -(vw - W) / 2 : 0, vh > H ? -(vh - H) / 2 : 0, Math.max(W, vw), Math.max(H, vh));

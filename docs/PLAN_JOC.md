@@ -22,13 +22,18 @@ Progresul se salvează local și **merge doar înainte**. Singura cale înapoi e
 |---|---|---|---|
 | S1 | Personaje | Odysseus ✓, costum EVA ✓ (de integrat), 5 membri de echipaj (recolorări + trăsături), portrete pentru dialog, poze: cară, repară, rănit | parțial |
 | S2 | Camere de stație | hidroponică ✓, **reactor ✓, hangar ✓, comandă ✓** (uși, terminal ORION, terminal criosomn, masă holografică, navă, fereastră spre spațiu), laborator (scena există, de integrat), depozit, infirmerie, atelier | parțial |
-| S3 | Stația din spațiu | module văzute de sus, panouri solare, antene, docuri, propulsoare (stația navighează), lumini; piese modulare pentru extindere | de făcut |
+| S3 | Stația din spațiu | **module văzute de sus ✓** (hidroponică, comandă, reactor, hangar, laborator în construcție), panouri solare ✓, antene ✓, propulsoare animate ✓, conectori ✓, planetă sterpă ✓, stele ✓; lipsesc: docuri cu nave care sosesc, piese pentru extindere | parțial |
 | S4 | Nave | nava jucătorului (16 unghiuri din Blender), cargo, scout, miner, 3 nave pirat, sateliți abandonați; variante în hangar (3/4) | de făcut |
 | S5 | Spațiu și lumi | asteroizi, 3 planete (peșteri cu cristale, junglă toxică, gheață), teren de explorare, interior de stație abandonată | de făcut |
 | S6 | Viață și resurse | mai multe plante/cristale, 4 creaturi noi (meduza ✓), obiecte de recoltat, artefacte | parțial |
 | S7 | Interfață | panouri, iconițe, dialog cu portrete, hartă, inventar, setări | parțial (HUD DOM) |
 | S8 | Efecte și lumină | scântei, aburi, holograme, propulsoare, explozii, raze; lanternă ✓, lămpi de urgență ✓ | parțial |
 | S9 | Sunet | muzică ambientală, pași, uși, recoltă, alarmă, voce ORION | de făcut |
+
+## Vedere și navigare
+- **Zoom:** rotiță de mouse, ciupire pe telefon, butoanele − / + sau tastele − / +. Când te îndepărtezi, camera plutește în spațiu, cu stele și planeta în fundal.
+- **Harta stației (M sau butonul Hartă):** toată stația văzută din spațiu, în mișcare; alegi un modul și te teleportezi acolo. Laboratorul e blocat până la Actul 3.
+- **De făcut:** controlul personajului în exterior (spacewalk cu costumul EVA) și docurile cu nave.
 
 ## Etapele jocului (cod)
 1. **E1 Felia de bază** ✓ (cameră, personaj, cultivare, energie).

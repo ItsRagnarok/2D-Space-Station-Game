@@ -2,7 +2,7 @@
 Run:  python3 build_game_assets.py      (from tools/assets/forge)  -> ../../../public/assets/"""
 import os, json, math
 from core import *
-import odysseus, hydroponics, station_rooms, objects as o
+import odysseus, hydroponics, station_rooms, station_exterior, objects as o
 from scene_base import floor_tile, wall_panel, hazard_strip
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
@@ -16,6 +16,7 @@ for outfit in ('station', 'eva', 'yellow', 'green'):    # yellow/green = crew, r
 # hydroponics set
 sprites.update(hydroponics.all_sprites())
 sprites.update(station_rooms.all_sprites())
+sprites.update(station_exterior.all_sprites())
 for i in range(12): sprites[f'globe_{i:02d}'] = o.globe(i * math.pi * 2 / 12)
 # shared props reused from the research module
 for i in range(4): sprites[f'console_{i}'] = o.console(i)
@@ -99,4 +100,5 @@ bolt = new(12, 14)
 for (x, y) in ((7, 0), (6, 1), (5, 2), (4, 3), (3, 4), (2, 5), (3, 6), (4, 6), (5, 6), (5, 7), (4, 8), (4, 9), (3, 10), (3, 11), (2, 12)):
     for dx in range(0, 3): px(bolt, x + dx, y, ORANGE[4] if dx else ORANGE[3])
 bolt.save(os.path.join(OUT, 'icons', 'energy.png'))
+station_exterior.stars_tile().save(os.path.join(OUT, 'stars_tile.png')); station_exterior.planet().save(os.path.join(OUT, 'planet_rock.png'))
 print('atlas', atlas.size, len(sprites), 'frames ->', OUT)

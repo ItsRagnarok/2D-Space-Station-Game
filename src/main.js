@@ -4,6 +4,7 @@ import Hydroponics from './scenes/Hydroponics.js';
 import Command from './scenes/Command.js';
 import Reactor from './scenes/Reactor.js';
 import Hangar from './scenes/Hangar.js';
+import StationMap from './scenes/StationMap.js';
 
 const game = new Phaser.Game({
   type: Phaser.AUTO,
@@ -16,7 +17,7 @@ const game = new Phaser.Game({
   fps: { target: 60 },
   physics: { default: 'arcade', arcade: { gravity: { y: 0 } } },
   input: { activePointers: 3 },
-  scene: [Boot, Hydroponics, Command, Reactor, Hangar],
+  scene: [Boot, Hydroponics, Command, Reactor, Hangar, StationMap],
 });
 
 // iOS reports the new size late after launch/rotation: ask Phaser to re-measure a few times.

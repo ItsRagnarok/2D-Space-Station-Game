@@ -9,6 +9,8 @@ export default class Boot extends Phaser.Scene {
   preload() {
     this.load.atlas('o', 'assets/orbital.png', 'assets/orbital.json');
     this.load.image('vignette', 'assets/vignette.png');
+    this.load.image('stars_tile', 'assets/stars_tile.png');
+    this.load.image('planet_rock', 'assets/planet_rock.png');
   }
 
   create() {

@@ -56,3 +56,13 @@
   #menu-btn { top: 54px; font-size: 12px; } #dialog { bottom: calc(8px + env(safe-area-inset-bottom)); } #dialog .txt { font-size: 15px; }
   #banner b { font-size: 26px; } #menu .box { padding: 10px 16px; font-size: 14px; } #menu .mt { font-size: 18px; margin-bottom: 4px; } #menu button { margin: 5px 0; padding: 7px; }
 }
+
+#tools { right: max(10px, env(safe-area-inset-right)); top: 112px; display: flex; gap: 6px; padding: 4px; pointer-events: auto; }
+#tools button { font: inherit; font-weight: 700; font-size: 16px; min-width: 34px; height: 30px; padding: 0 8px; color: #2fe58a; background: rgba(3, 22, 20, .9); border: 2px solid #2fe58a; border-radius: 5px; cursor: pointer; touch-action: none; }
+#mapinfo { left: 50%; bottom: 12px; transform: translateX(-50%); display: none; pointer-events: auto; width: min(80vw, 460px); border-color: #f2b84b; }
+#mapinfo.show { display: block; } #mapinfo .mt { color: #f2b84b; font-size: 15px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700; }
+#mapinfo .ms { font-size: 15px; margin: 2px 0 6px; } #mapinfo .mb { display: flex; gap: 8px; }
+#mapinfo button { flex: 1; font: inherit; font-weight: 700; padding: 7px; color: #02150e; background: #2fe58a; border: 0; border-radius: 5px; cursor: pointer; text-transform: uppercase; }
+#mapinfo #map-close { background: transparent; color: #2fe58a; border: 2px solid #2fe58a; }
+.inmap #stick, .inmap .btn, .inmap #prompt, .inmap #obj { display: none !important; }
+@media (max-height: 460px) { #tools { top: 84px; } #tools button { height: 26px; font-size: 14px; } #mapinfo { bottom: calc(8px + env(safe-area-inset-bottom)); } }
