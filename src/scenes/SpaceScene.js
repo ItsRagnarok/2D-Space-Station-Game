@@ -1,13 +1,14 @@
 import Phaser from 'phaser';
 
-const WORLD = 20000; // big map; the camera wraps around it conceptually
-const TILE = 512;
+const WORLD = 8000; // big map (in game pixels); wraps seamlessly
+const TILE = 256;
+const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map((v) => v / 16);
 
-// Parallax layers: farther = smaller factor = moves slower.
+// Few stars, dim. Farther layers move slower.
 const STAR_LAYERS = [
-  { key: 'stars0', count: 90, size: [0.6, 1.1], alpha: [0.25, 0.6], factor: 0.08 },
-  { key: 'stars1', count: 60, size: [0.9, 1.6], alpha: [0.4, 0.8], factor: 0.2 },
-  { key: 'stars2', count: 28, size: [1.3, 2.4], alpha: [0.6, 1.0], factor: 0.45 },
+  { key: 'stars0', count: 12, colors: ['#2a3050', '#333a5e'], big: 0, factor: 0.08 },
+  { key: 'stars1', count: 7, colors: ['#5a6492', '#6c76a6'], big: 0, factor: 0.2 },
+  { key: 'stars2', count: 4, colors: ['#aab4e6', '#dfe6ff'], big: 0.5, factor: 0.45 },
 ];
 
 export default class SpaceScene extends Phaser.Scene {
@@ -16,47 +17,35 @@ export default class SpaceScene extends Phaser.Scene {
   }
 
   create() {
-    const rng = new Phaser.Math.RandomDataGenerator(['space-station-1']);
-    this.rng = rng;
-
-    this.makeTextures(rng);
+    this.rng = new Phaser.Math.RandomDataGenerator(['space-station-pixel-1']);
+    this.makeStaticTextures();
 
     const { width, height } = this.scale;
 
-    // Deep background gradient (fixed to the screen).
-    this.bg = this.add.image(0, 0, 'bg').setOrigin(0).setScrollFactor(0).setDepth(-100);
-
-    // Nebula clouds (very far, very slow).
     this.nebula = this.add.tileSprite(0, 0, width, height, 'nebula')
-      .setOrigin(0).setScrollFactor(0).setDepth(-90).setAlpha(0.9);
+      .setOrigin(0).setScrollFactor(0).setDepth(-90);
 
-    // Star layers.
     this.starLayers = STAR_LAYERS.map((cfg, i) => ({
       cfg,
       sprite: this.add.tileSprite(0, 0, width, height, cfg.key)
         .setOrigin(0).setScrollFactor(0).setDepth(-80 + i),
     }));
 
-    // A distant planet placed in the world, drifts slowly with the camera.
-    this.planet = this.add.image(0, 0, 'planet').setDepth(-70).setScrollFactor(0);
-    this.planetFactor = 0.06;
-
-    // A tiny far moon orbiting-ish near the planet.
+    this.planet = this.add.image(0, 0, '__DEFAULT').setDepth(-70).setScrollFactor(0);
+    this.planetR = 0;
     this.moon = this.add.image(0, 0, 'moon').setDepth(-69).setScrollFactor(0);
+    this.planetFactor = 0.1;
 
-    // Shooting stars.
     this.streaks = [];
-    this.time.addEvent({ delay: 3500, loop: true, callback: () => this.spawnStreak() });
+    this.time.addEvent({ delay: 5000, loop: true, callback: () => this.spawnStreak() });
 
-    // Camera starts somewhere in the middle of the big world and drifts.
     this.cam = this.cameras.main;
     this.pos = new Phaser.Math.Vector2(WORLD / 2, WORLD / 2);
-    this.vel = new Phaser.Math.Vector2(0, 0);
-    this.drift = new Phaser.Math.Vector2(14, 6); // px/s constant slow glide
-    this.driftAngle = 0;
     this.startPos = this.pos.clone();
+    this.vel = new Phaser.Math.Vector2(0, 0);
+    this.driftAngle = 0;
 
-    // Drag to look around (touch or mouse), with inertia.
+    // Drag to look around (touch or mouse) with inertia.
     this.dragging = false;
     this.input.on('pointerdown', (p) => {
       this.dragging = true;
@@ -84,63 +73,66 @@ export default class SpaceScene extends Phaser.Scene {
   onResize(size) {
     const w = size.width ?? this.scale.width;
     const h = size.height ?? this.scale.height;
-    this.bg.setDisplaySize(w, h);
     this.nebula.setSize(w, h);
     this.starLayers.forEach((l) => l.sprite.setSize(w, h));
     this.cam.setSize(w, h);
+
+    // Big planet: radius is ~38% of the short screen side.
+    const R = Phaser.Math.Clamp(Math.round(Math.min(w, h) * 0.38), 40, 150);
+    if (R !== this.planetR) {
+      this.planetR = R;
+      if (this.textures.exists('planet')) this.textures.remove('planet');
+      this.makePlanetTexture(R);
+      this.planet.setTexture('planet');
+    }
   }
 
   update(time, delta) {
     const dt = Math.min(delta, 50) / 1000;
 
-    // Gently rotate the drift direction so motion never feels mechanical.
+    // Slow, never perfectly straight glide.
     this.driftAngle += dt * 0.05;
-    const dx = this.drift.x + Math.cos(this.driftAngle) * 6;
-    const dy = this.drift.y + Math.sin(this.driftAngle * 0.7) * 5;
+    const dx = 5 + Math.cos(this.driftAngle) * 2;
+    const dy = 2 + Math.sin(this.driftAngle * 0.7) * 2;
 
     if (!this.dragging) {
-      // Inertia decays toward the constant drift.
       this.vel.x += (dx - this.vel.x) * Math.min(1, dt * 1.5);
       this.vel.y += (dy - this.vel.y) * Math.min(1, dt * 1.5);
       this.pos.x += this.vel.x * dt;
       this.pos.y += this.vel.y * dt;
     }
-
-    // Keep inside the huge world by wrapping (seamless thanks to tiling).
     this.pos.x = Phaser.Math.Wrap(this.pos.x, 0, WORLD);
     this.pos.y = Phaser.Math.Wrap(this.pos.y, 0, WORLD);
 
     const { width, height } = this.scale;
 
-    this.nebula.tilePositionX = this.pos.x * 0.04;
-    this.nebula.tilePositionY = this.pos.y * 0.04;
-    for (const { cfg, sprite } of this.starLayers) {
-      sprite.tilePositionX = this.pos.x * cfg.factor;
-      sprite.tilePositionY = this.pos.y * cfg.factor;
-      // Subtle twinkle: each layer breathes at a different rhythm.
-      sprite.alpha = 0.85 + 0.15 * Math.sin(time / (900 + cfg.factor * 4000));
-    }
+    this.nebula.tilePositionX = Math.floor(this.pos.x * 0.05);
+    this.nebula.tilePositionY = Math.floor(this.pos.y * 0.05);
+    this.starLayers.forEach(({ cfg, sprite }, i) => {
+      sprite.tilePositionX = Math.floor(this.pos.x * cfg.factor);
+      sprite.tilePositionY = Math.floor(this.pos.y * cfg.factor);
+      // Stepped twinkle (two brightness levels) to keep the pixel feel.
+      sprite.alpha = Math.sin(time / (700 + i * 450) + i * 2) > 0.2 ? 1 : 0.65;
+    });
 
-    // Planet: world position relative to the camera, heavily damped.
-    const px = width * 0.74 - (this.pos.x - this.startPos.x) * this.planetFactor;
-    const py = height * 0.24 - (this.pos.y - this.startPos.y) * this.planetFactor;
+    // Big planet, partly off the top-right edge, drifting very slowly.
+    const px = Math.round(width * 0.66 - (this.pos.x - this.startPos.x) * this.planetFactor);
+    const py = Math.round(height * 0.3 - (this.pos.y - this.startPos.y) * this.planetFactor);
     this.planet.setPosition(px, py);
-    this.planet.setScale(Math.max(0.35, Math.min(width, height) / 1100));
-    this.planet.rotation = time * 0.000004;
-    this.moon.setPosition(
-      px + Math.cos(time * 0.00004) * 260 * this.planet.scale,
-      py + Math.sin(time * 0.00004) * 70 * this.planet.scale,
-    );
-    this.moon.setScale(this.planet.scale);
-    this.moon.setDepth(Math.sin(time * 0.00004) > 0 ? -68 : -71);
 
-    // Shooting stars.
+    const ang = time * 0.00005;
+    this.moon.setPosition(
+      Math.round(px + Math.cos(ang) * this.planetR * 1.9),
+      Math.round(py + Math.sin(ang) * this.planetR * 0.45 + this.planetR * 0.3),
+    );
+    this.moon.setDepth(Math.sin(ang) > 0 ? -68 : -71);
+
     for (let i = this.streaks.length - 1; i >= 0; i--) {
       const s = this.streaks[i];
       s.life -= dt;
-      s.obj.x += s.vx * dt;
-      s.obj.y += s.vy * dt;
-      s.obj.alpha = Math.max(0, Math.min(1, s.life / s.max)) * 0.9;
+      s.obj.x = Math.round(s.obj.x + s.v * dt);
+      s.obj.y = Math.round(s.obj.y + s.v * dt);
+      s.obj.alpha = s.life > 0.2 ? 1 : Math.max(0, s.life / 0.2);
       if (s.life <= 0) {
         s.obj.destroy();
         this.streaks.splice(i, 1);
@@ -150,165 +142,162 @@ export default class SpaceScene extends Phaser.Scene {
 
   spawnStreak() {
     const { width, height } = this.scale;
-    const angle = Phaser.Math.DegToRad(this.rng.between(20, 50));
-    const speed = this.rng.between(700, 1100);
-    const obj = this.add.image(this.rng.between(0, width), this.rng.between(-20, height * 0.4), 'streak')
-      .setScrollFactor(0).setDepth(-60).setRotation(angle).setOrigin(1, 0.5);
-    this.streaks.push({
-      obj,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
-      life: 0.7,
-      max: 0.7,
-    });
+    const obj = this.add.image(this.rng.between(0, width), this.rng.between(-10, height * 0.35), 'streak')
+      .setScrollFactor(0).setDepth(-60).setOrigin(1, 1);
+    this.streaks.push({ obj, v: this.rng.between(120, 180), life: 0.9 });
   }
 
-  // ---- Procedural art (all drawn with canvas, no external assets) ----
-  makeTextures(rng) {
-    const tex = this.textures;
-    const make = (key, w, h, draw) => {
-      const c = tex.createCanvas(key, w, h);
-      draw(c.getContext(), w, h);
-      c.refresh();
-    };
+  // ---------- Procedural pixel art ----------
+  canvasTex(key, w, h) {
+    const tex = this.textures.createCanvas(key, w, h);
+    const g = tex.getContext();
+    g.imageSmoothingEnabled = false;
+    return { tex, g };
+  }
 
-    // Background gradient.
-    make('bg', 4, 512, (g, w, h) => {
-      const grad = g.createLinearGradient(0, 0, 0, h);
-      grad.addColorStop(0, '#02030a');
-      grad.addColorStop(0.55, '#070b1f');
-      grad.addColorStop(1, '#0c0a22');
-      g.fillStyle = grad;
-      g.fillRect(0, 0, w, h);
-    });
+  makeStaticTextures() {
+    const rng = this.rng;
 
-    // Seamless star tiles: draw each star at 9 offsets so edges wrap.
+    // Star tiles: 1px squares (a few small plus-shaped ones). Integer coords => seamless.
     for (const L of STAR_LAYERS) {
-      make(L.key, TILE, TILE, (g) => {
-        for (let i = 0; i < L.count; i++) {
-          const x = rng.realInRange(0, TILE);
-          const y = rng.realInRange(0, TILE);
-          const r = rng.realInRange(L.size[0], L.size[1]);
-          const a = rng.realInRange(L.alpha[0], L.alpha[1]);
-          const tint = rng.pick(['#ffffff', '#cfe3ff', '#ffe9c8', '#d7d0ff']);
-          for (let ox = -TILE; ox <= TILE; ox += TILE) {
-            for (let oy = -TILE; oy <= TILE; oy += TILE) {
-              const grd = g.createRadialGradient(x + ox, y + oy, 0, x + ox, y + oy, r * 2.2);
-              grd.addColorStop(0, hexA(tint, a));
-              grd.addColorStop(0.4, hexA(tint, a * 0.5));
-              grd.addColorStop(1, hexA(tint, 0));
-              g.fillStyle = grd;
-              g.beginPath();
-              g.arc(x + ox, y + oy, r * 2.2, 0, Math.PI * 2);
-              g.fill();
-            }
-          }
+      const { tex, g } = this.canvasTex(L.key, TILE, TILE);
+      for (let i = 0; i < L.count; i++) {
+        const x = rng.between(2, TILE - 3);
+        const y = rng.between(2, TILE - 3);
+        g.fillStyle = rng.pick(L.colors);
+        g.fillRect(x, y, 1, 1);
+        if (rng.frac() < L.big) {
+          g.fillStyle = L.colors[0];
+          g.fillRect(x - 1, y, 1, 1); g.fillRect(x + 1, y, 1, 1);
+          g.fillRect(x, y - 1, 1, 1); g.fillRect(x, y + 1, 1, 1);
         }
-      });
+      }
+      tex.refresh();
     }
 
-    // Nebula tile (soft coloured blobs, wraps seamlessly).
-    make('nebula', 1024, 1024, (g, w) => {
-      const colors = ['rgba(90,60,200,', 'rgba(30,110,200,', 'rgba(170,50,150,', 'rgba(20,150,170,'];
-      for (let i = 0; i < 14; i++) {
-        const x = rng.realInRange(0, w);
-        const y = rng.realInRange(0, w);
-        const r = rng.realInRange(160, 380);
-        const col = rng.pick(colors);
-        for (let ox = -w; ox <= w; ox += w) {
-          for (let oy = -w; oy <= w; oy += w) {
-            const grd = g.createRadialGradient(x + ox, y + oy, 0, x + ox, y + oy, r);
-            grd.addColorStop(0, col + '0.16)');
-            grd.addColorStop(0.5, col + '0.06)');
-            grd.addColorStop(1, col + '0)');
-            g.fillStyle = grd;
-            g.fillRect(x + ox - r, y + oy - r, r * 2, r * 2);
+    // Very dark dithered nebula, barely lighter than the void.
+    {
+      const { tex, g } = this.canvasTex('nebula', TILE, TILE);
+      const blobs = [];
+      for (let i = 0; i < 6; i++) {
+        blobs.push({
+          x: rng.between(0, TILE), y: rng.between(0, TILE),
+          r: rng.between(50, 90), c: rng.pick(['#0b0a1e', '#0e0a20', '#071420']),
+        });
+      }
+      for (let y = 0; y < TILE; y++) {
+        for (let x = 0; x < TILE; x++) {
+          let best = null; let bd = 0;
+          for (const b of blobs) {
+            const ddx = Math.min(Math.abs(x - b.x), TILE - Math.abs(x - b.x));
+            const ddy = Math.min(Math.abs(y - b.y), TILE - Math.abs(y - b.y));
+            const d = Math.max(0, 1 - Math.hypot(ddx, ddy) / b.r);
+            if (d > bd) { bd = d; best = b; }
+          }
+          if (best && bd > BAYER[(y % 4) * 4 + (x % 4)] * 0.9) {
+            g.fillStyle = best.c;
+            g.fillRect(x, y, 1, 1);
           }
         }
       }
-    });
+      tex.refresh();
+    }
 
-    // Distant planet: sphere shading + bands + atmosphere + ring.
-    make('planet', 640, 640, (g, w) => {
-      const c = w / 2;
-      const R = 170;
-      // Atmosphere glow.
-      let grd = g.createRadialGradient(c, c, R * 0.9, c, c, R * 1.5);
-      grd.addColorStop(0, 'rgba(120,170,255,0.35)');
-      grd.addColorStop(1, 'rgba(120,170,255,0)');
-      g.fillStyle = grd;
-      g.fillRect(0, 0, w, w);
-
-      // Back half of the ring.
-      const ring = (front) => {
-        g.save();
-        g.translate(c, c);
-        g.rotate(-0.35);
-        g.scale(1, 0.28);
-        g.beginPath();
-        g.arc(0, 0, R * 1.75, front ? 0 : Math.PI, front ? Math.PI : Math.PI * 2);
-        g.lineWidth = 26;
-        g.strokeStyle = 'rgba(210,190,255,0.35)';
-        g.stroke();
-        g.beginPath();
-        g.arc(0, 0, R * 1.5, front ? 0 : Math.PI, front ? Math.PI : Math.PI * 2);
-        g.lineWidth = 10;
-        g.strokeStyle = 'rgba(160,200,255,0.3)';
-        g.stroke();
-        g.restore();
-      };
-      ring(false);
-
-      // Body with bands, clipped to circle.
-      g.save();
-      g.beginPath();
-      g.arc(c, c, R, 0, Math.PI * 2);
-      g.clip();
-      const body = g.createLinearGradient(0, c - R, 0, c + R);
-      ['#4b3f9e', '#6a5acd', '#8a6bd6', '#5a4fb8', '#3b3585'].forEach((col, i, a) =>
-        body.addColorStop(i / (a.length - 1), col));
-      g.fillStyle = body;
-      g.fillRect(c - R, c - R, R * 2, R * 2);
-      for (let i = 0; i < 9; i++) {
-        g.fillStyle = `rgba(${rng.between(150, 255)},${rng.between(140, 220)},255,${rng.realInRange(0.04, 0.12)})`;
-        g.fillRect(c - R, c - R + rng.between(0, R * 2), R * 2, rng.between(6, 22));
+    // Small moon (3-tone pixel disc).
+    {
+      const R = 6; const S = R * 2 + 1;
+      const { tex, g } = this.canvasTex('moon', S, S);
+      const tones = ['#14141c', '#262735', '#4a4c63', '#7a7d99'];
+      for (let y = 0; y < S; y++) {
+        for (let x = 0; x < S; x++) {
+          const nx = (x - R) / R; const ny = (y - R) / R;
+          const d2 = nx * nx + ny * ny;
+          if (d2 > 1) continue;
+          const l = Math.max(0, -nx * 0.6 - ny * 0.5 + Math.sqrt(1 - d2) * 0.6);
+          const idx = Phaser.Math.Clamp(Math.floor(l * 4 + (BAYER[(y % 4) * 4 + (x % 4)] - 0.5)), 0, 3);
+          g.fillStyle = tones[idx];
+          g.fillRect(x, y, 1, 1);
+        }
       }
-      // Terminator shadow + rim light.
-      const shade = g.createRadialGradient(c - R * 0.45, c - R * 0.45, R * 0.1, c, c, R * 1.05);
-      shade.addColorStop(0, 'rgba(255,255,255,0.18)');
-      shade.addColorStop(0.5, 'rgba(0,0,0,0)');
-      shade.addColorStop(1, 'rgba(0,0,10,0.85)');
-      g.fillStyle = shade;
-      g.fillRect(c - R, c - R, R * 2, R * 2);
-      g.restore();
+      tex.refresh();
+    }
 
-      ring(true);
-    });
-
-    // Small moon.
-    make('moon', 64, 64, (g) => {
-      const grd = g.createRadialGradient(22, 22, 2, 32, 32, 28);
-      grd.addColorStop(0, '#d9dbe6');
-      grd.addColorStop(0.6, '#8d90a3');
-      grd.addColorStop(1, '#2a2c3a');
-      g.fillStyle = grd;
-      g.beginPath();
-      g.arc(32, 32, 20, 0, Math.PI * 2);
-      g.fill();
-    });
-
-    // Shooting star streak.
-    make('streak', 160, 6, (g, w, h) => {
-      const grd = g.createLinearGradient(0, 0, w, 0);
-      grd.addColorStop(0, 'rgba(255,255,255,0)');
-      grd.addColorStop(1, 'rgba(255,255,255,1)');
-      g.fillStyle = grd;
-      g.fillRect(0, h / 2 - 1, w, 2);
-    });
+    // Shooting star: 45° pixel trail fading toward the tail.
+    {
+      const N = 14;
+      const { tex, g } = this.canvasTex('streak', N, N);
+      for (let i = 0; i < N; i++) {
+        const a = i / (N - 1);
+        g.fillStyle = `rgba(220,230,255,${(0.15 + a * 0.85).toFixed(2)})`;
+        g.fillRect(i, i, 1, 1);
+      }
+      tex.refresh();
+    }
   }
-}
 
-function hexA(hex, a) {
-  const n = parseInt(hex.slice(1), 16);
-  return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`;
+  // Big gas giant with a ring, shaded per-pixel into a few dithered tones.
+  makePlanetTexture(R) {
+    const rng = new Phaser.Math.RandomDataGenerator(['planet-1']);
+    const ringOut = R * 1.85;
+    const S = Math.ceil(ringOut) * 2 + 2;
+    const c = S / 2;
+    const { tex, g } = this.canvasTex('planet', S, S);
+    const img = g.createImageData(S, S);
+    const put = (x, y, hex) => {
+      const n = parseInt(hex.slice(1), 16);
+      const i = (y * S + x) * 4;
+      img.data[i] = n >> 16; img.data[i + 1] = (n >> 8) & 255; img.data[i + 2] = n & 255; img.data[i + 3] = 255;
+    };
+
+    const body = ['#0a0716', '#150f30', '#231a52', '#352878', '#4b3b9a'];
+    const ringTones = ['#1b1638', '#2a2352', '#3b3270'];
+    const L = (() => { const v = [-0.6, -0.5, 0.62]; const m = Math.hypot(...v); return v.map((a) => a / m); })();
+    const tilt = -0.28;
+    const squash = 0.3;
+
+    const ringAt = (x, y) => {
+      const u = x - c;
+      const v = (y - c) - tilt * u;
+      const r = Math.hypot(u, v / squash);
+      let tone = -1;
+      if (r >= R * 1.42 && r <= R * 1.6) tone = 1;
+      else if (r >= R * 1.68 && r <= ringOut) tone = 2;
+      else if (r >= R * 1.6 && r < R * 1.68) tone = -1;
+      if (tone < 0) return null;
+      const dither = BAYER[(y % 4) * 4 + (x % 4)] > 0.55 ? tone - 1 : tone;
+      return { color: ringTones[Math.max(0, dither)], front: v >= 0 };
+    };
+    const bodyAt = (x, y) => {
+      const nx = (x - c) / R; const ny = (y - c) / R;
+      const d2 = nx * nx + ny * ny;
+      if (d2 > 1) return null;
+      const nz = Math.sqrt(1 - d2);
+      let t = Math.max(0, nx * L[0] + ny * L[1] + nz * L[2]);
+      t = t * 0.9 + Math.sin(ny * 8 + Math.sin(nx * 3) * 0.7) * 0.07;
+      const idx = Phaser.Math.Clamp(Math.floor(t * 5 + (BAYER[(y % 4) * 4 + (x % 4)] - 0.5) * 0.9), 0, 4);
+      return body[idx];
+    };
+
+    for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+      const r = ringAt(x, y);
+      if (r && !r.front) put(x, y, r.color); // ring behind the planet
+    }
+    for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+      const b = bodyAt(x, y);
+      if (b) put(x, y, b);
+    }
+    for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+      const r = ringAt(x, y);
+      if (r && r.front) put(x, y, r.color); // ring in front
+    }
+    // A few crater/storm pixels for character.
+    for (let i = 0; i < 6; i++) {
+      const x = Math.round(c + rng.realInRange(-0.6, 0.2) * R);
+      const y = Math.round(c + rng.realInRange(-0.5, 0.5) * R);
+      if (bodyAt(x, y)) { put(x, y, body[3]); put(x + 1, y, body[3]); }
+    }
+
+    g.putImageData(img, 0, 0);
+    tex.refresh();
+  }
 }
