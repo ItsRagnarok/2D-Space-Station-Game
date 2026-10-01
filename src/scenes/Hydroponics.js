@@ -67,6 +67,7 @@ export default class Hydroponics extends Phaser.Scene {
     this.hud.setRes(this.res);
     this.setEnergy(100);
     this.scale.on('resize', () => this.setupCamera());
+    this.hud.debugInfo(() => `inner ${innerWidth}x${innerHeight} · visual ${window.visualViewport ? Math.round(window.visualViewport.width) + 'x' + Math.round(window.visualViewport.height) : '-'} · screen ${screen.width}x${screen.height} · dpr ${devicePixelRatio} · game ${this.scale.width}x${this.scale.height} · zoom ${this.cameras.main.zoom} · standalone ${navigator.standalone === true}`);
   }
 
   // ---------- room ----------
@@ -200,7 +201,9 @@ export default class Hydroponics extends Phaser.Scene {
   // ---------- camera ----------
   setupCamera() {
     const cam = this.cameras.main;
-    const z = Math.max(2, Math.round(this.scale.height / 170));
+    const vv = window.visualViewport;
+    const cssH = Math.min(this.scale.height, window.innerHeight, vv ? vv.height : Infinity);   // iOS can report stale/bigger values
+    const z = Phaser.Math.Clamp(Math.round(cssH / 190), 2, 5);
     cam.setZoom(z);
     const vw = cam.width / z, vh = cam.height / z;
     const bx = vw > W ? -(vw - W) / 2 : 0, by = vh > H ? -(vh - H) / 2 : 0;

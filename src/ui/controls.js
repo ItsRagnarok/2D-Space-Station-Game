@@ -5,6 +5,11 @@ export function createControls(scene) {
   scene.input.keyboard.on('keydown-E', () => { c._act = true; });
   scene.input.keyboard.on('keydown-SPACE', () => { c._act = true; });
   scene.input.keyboard.on('keydown-F', () => { c._flash = true; });
+  scene.input.mouse.disableContextMenu();
+  scene.input.on('pointerdown', (ptr) => {
+    if (ptr.wasTouch || (ptr.event && ptr.event.pointerType && ptr.event.pointerType !== 'mouse')) return;
+    if (ptr.rightButtonDown()) c._flash = true; else if (ptr.leftButtonDown()) c._act = true;
+  });
   const stick = document.getElementById('stick'), knob = stick && stick.querySelector('i');
   let touchVec = { x: 0, y: 0 }, pid = null;
   const move = (e) => {

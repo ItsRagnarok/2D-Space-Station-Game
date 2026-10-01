@@ -12,11 +12,12 @@ export function createHud() {
     <div id="energy" class="panel"><div class="name"><span>Odysseus</span><span id="epct">100%</span></div>
       <div class="bar"><i id="ebar" style="width:100%"></i></div><div class="state" id="estate">Energie normală</div></div>
     <div id="res" class="panel">${RES.map(([k, n]) => `<div><img src="assets/icons/${k}.png" alt=""><span>${n}</span><b id="r-${k}">0</b></div>`).join('')}</div>
-    <div id="help" class="panel">WASD / săgeți · E acțiune · F lanternă · 1–5 energie (test)</div>
+    <div id="help" class="panel">WASD / săgeți · click stânga acțiune · click dreapta lanternă · 1–5 energie (test)</div>
     <div id="prompt" class="panel"></div><div id="toast" class="panel"></div>
     <div id="stick"><i></i></div>
     <div id="fl" class="btn">Lanternă</div><div id="act" class="btn">Acțiune</div>
     <div id="ios-tip" class="panel">Pentru ecran complet pe iPhone: Distribuie → <b>Adaugă pe ecranul principal</b>, apoi deschide jocul de acolo.<br><button>Am înțeles</button></div>
+    <div id="dbg" class="panel"></div>
     <div id="rotate">Rotește telefonul în modul landscape ca să joci.</div>`;
   const $ = (id) => document.getElementById(id);
   // iPhone Safari can't hide its bars from code: suggest installing to the home screen (fullscreen PWA).
@@ -36,10 +37,17 @@ export function createHud() {
     };
     if (isTouch) window.addEventListener('pointerdown', goFull, { once: true });
   }
+  let taps = [], dbgOn = false, dbgFn = null;
+  $('energy').addEventListener('pointerdown', () => {
+    const n = Date.now(); taps = taps.filter((t) => n - t < 1500); taps.push(n);
+    if (taps.length >= 3) { taps = []; dbgOn = !dbgOn; $('dbg').style.display = dbgOn ? 'block' : 'none'; }
+  });
+  setInterval(() => { if (dbgOn && dbgFn) $('dbg').textContent = dbgFn(); }, 400);
   document.addEventListener('gesturestart', (e) => e.preventDefault());
   let toastTimer;
   return {
     isTouch,
+    debugInfo(fn) { dbgFn = fn; },
     setEnergy(e, label, color) {
       $('epct').textContent = Math.round(e) + '%';
       const bar = $('ebar'); bar.style.width = e + '%'; bar.style.setProperty('--c', color);
