@@ -81,6 +81,7 @@ d = ImageDraw.Draw(im); d.fontmode = '1'; d.text((PX + PW - 44, PY + PH - 34), '
 # glow from engines onto pad (blue)
 glow(im, 120, 118, 40, BLUE[3], 0.35)
 
+im.save(os.path.join(OUT, 'hangar_noship.png'))
 # ---------- ship (blender render -> pixel art) ----------
 raw = Image.open(os.path.join(OUT, 'freighter_raw.png')).convert('RGBA'); raw = raw.crop(raw.getbbox())
 sw = 150; ship = raw.resize((sw, round(raw.height * sw / raw.width)), Image.LANCZOS)
