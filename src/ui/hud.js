@@ -16,8 +16,27 @@ export function createHud() {
     <div id="prompt" class="panel"></div><div id="toast" class="panel"></div>
     <div id="stick"><i></i></div>
     <div id="fl" class="btn">Lanternă</div><div id="act" class="btn">Acțiune</div>
+    <div id="ios-tip" class="panel">Pentru ecran complet pe iPhone: Distribuie → <b>Adaugă pe ecranul principal</b>, apoi deschide jocul de acolo.<br><button>Am înțeles</button></div>
     <div id="rotate">Rotește telefonul în modul landscape ca să joci.</div>`;
   const $ = (id) => document.getElementById(id);
+  // iPhone Safari can't hide its bars from code: suggest installing to the home screen (fullscreen PWA).
+  const standalone = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: fullscreen)').matches;
+  const iOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  let seen = false; try { seen = localStorage.getItem('oh-ios-tip') === '1'; } catch (e) { /* private mode */ }
+  if (iOS && !standalone && !seen) {
+    const tip = $('ios-tip'); tip.style.display = 'block';
+    tip.querySelector('button').addEventListener('click', () => { tip.style.display = 'none'; try { localStorage.setItem('oh-ios-tip', '1'); } catch (e) { /* ignore */ } });
+  }
+  // Android / desktop: go fullscreen + landscape on the first tap (needs a user gesture).
+  if (!standalone) {
+    const goFull = () => {
+      const el = document.documentElement;
+      (el.requestFullscreen ? el.requestFullscreen({ navigationUI: 'hide' }) : Promise.reject()).then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape').catch(() => {})).catch(() => {});
+      window.removeEventListener('pointerdown', goFull);
+    };
+    if (isTouch) window.addEventListener('pointerdown', goFull, { once: true });
+  }
+  document.addEventListener('gesturestart', (e) => e.preventDefault());
   let toastTimer;
   return {
     isTouch,

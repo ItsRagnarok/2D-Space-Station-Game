@@ -200,7 +200,7 @@ export default class Hydroponics extends Phaser.Scene {
   // ---------- camera ----------
   setupCamera() {
     const cam = this.cameras.main;
-    const z = Math.max(1, Math.round(window.innerHeight / 210));
+    const z = Math.max(2, Math.round(this.scale.height / 170));
     cam.setZoom(z);
     const vw = cam.width / z, vh = cam.height / z;
     const bx = vw > W ? -(vw - W) / 2 : 0, by = vh > H ? -(vh - H) / 2 : 0;
