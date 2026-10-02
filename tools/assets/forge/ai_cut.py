@@ -3,7 +3,7 @@ import sys, os
 from PIL import Image
 from scipy import ndimage
 import numpy as np
-HERE = os.path.dirname(__file__); P = os.path.join(HERE, '..', 'out', 'hangar', 'pieces')
+HERE = os.path.dirname(__file__); P = os.environ.get('PIECES_DIR') or os.path.join(HERE, '..', 'out', 'hangar', 'pieces')
 def cut(name, target_h=34):
     im = Image.open(os.path.join(P, name + '.png')).convert('RGB'); a = np.array(im).astype(int)
     bg = np.median(a[300:320, 250:290].reshape(-1, 3), axis=0)
