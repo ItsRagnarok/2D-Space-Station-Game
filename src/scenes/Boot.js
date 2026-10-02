@@ -11,6 +11,7 @@ export default class Boot extends Phaser.Scene {
     this.load.image('vignette', 'assets/vignette.png');
     this.load.image('stars_tile', 'assets/stars_tile.png');
     this.load.image('planet_rock', 'assets/planet_rock.png');
+    this.load.image('ship_hero', 'assets/ship_hero.png');
   }
 
   create() {

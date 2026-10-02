@@ -13,20 +13,24 @@ export default class Hangar {
     c.interact({ x: 300, y: 62, r: 60, prompt: () => 'Fereastra spre spațiu', use: () => ui.dialog([{ who: 'ORION', text: 'Dedesubt e planeta sterpă pe care orbităm. Nimic nu a crescut acolo de mii de ani. Poate de asta stația e atât de importantă.' }]), anim: false });
 
     c.sprite(230, 196, 'pad', { origin: [0.5, 1], z: c.Y(1) });
-    this.ship = c.prop('ship_0', 230, 176, { w: 44, h: 22 }, 'ship_idle'); c.shade(230, 176, 60);
+    this.ship = c.prop('ship_0', 230, 176, { w: 44, h: 22 }, 'ship_idle'); this.ship.setVisible(false); c.shade(230, 176, 90);
+    this.shipImg = c.scene.add.image(c.X(230), c.Y(182), 'ship_hero').setOrigin(0.5, 1).setDepth(c.Y(177)); this.padPos = { x: c.X(230), y: c.Y(182) };
+    c.scene.hangarPad = this.padPos; c.scene.hangarShip = this.shipImg;
     c.light({ x: 230, y: 168, s: 1.3, a: 0.6, glow: 0x58a4ff, ga: 0.2, gs: 1.1 });
-    c.interact({ x: 230, y: 184, r: 52,
+    c.interact({ x: 230, y: 186, r: 62,
       prompt: () => {
+        if (c.scene.piloting) return null;
         if (S.act >= 3 && !S.flags.shipReady) return S.flags.signalScanned ? '[E] Pregătește nava Meridian (10% energie)' : 'Meridian · decodează mai întâi semnalul în comandă';
-        return S.flags.shipReady ? 'Meridian e pregătită pentru zbor' : '[E] Nava Meridian';
+        return '[E] Pilotează Meridian';
       },
       use: () => {
+        if (c.scene.piloting) return;
         if (S.act >= 3 && !S.flags.shipReady) {
           if (!S.flags.signalScanned) { ui.toast('Mai întâi decodează semnalul'); return; }
           if (S.energy < 40) { ui.toast('Energie prea mică pentru pregătire (≥ 40%)'); return; }
           setEnergy(S.energy - 10); S.flags.shipReady = true;
           ui.dialog([{ who: 'ORION', text: 'Rezervoarele sunt pline, motoarele calibrate. Meridian e gata.' }]);
-        } else ui.dialog([{ who: 'ORION', text: 'Meridian. Navă de explorare ușoară. Rezervoarele erau goale când am adormit.' }]);
+        } else c.scene.startFlight();
       } });
 
     c.prop('tank', 350, 120, { w: 22, h: 10 }); c.prop('tank', 328, 124, { w: 22, h: 10 });

@@ -5,7 +5,7 @@ import { ui } from '../ui/ui.js';
 import { controls } from '../ui/controls.js';
 import { MODULES, CORRIDORS, RW, RH, WW, WH } from './layout.js';
 
-const SPEED = 58, B = 10;
+const SPEED = 58, B = 10, FLY = 150, FLY_B = [-1500, -1000, WW + 1500, WH + 1000];
 const ZOOMS = [0.4, 0.5, 0.65, 0.8, 1, 1.5, 2, 3, 4, 5, 6];
 
 // Splits [from, to] into the ranges that are NOT inside `gaps` (used for hull strips and walls with openings).
@@ -45,7 +45,7 @@ export default class Station extends Phaser.Scene {
     this.solids = this.physics.add.staticGroup();
     this.interactables = []; this.lights = []; this.doors = []; this.zones = []; this.modules = [];
     this.facing = 'down'; this.acting = 0; this.storyAcc = 0; this.posAcc = 0; this.overview = false; this.cur = null;
-    this.flashlight = false; this.flashAuto = false;
+    this.flashlight = false; this.flashAuto = false; this.piloting = false; this.fly = null;
     this.physics.world.setBounds(0, 0, WW, WH);
     this.buildSpace();
     MODULES.forEach((def) => this.buildModule(def));
@@ -302,6 +302,37 @@ export default class Station extends Phaser.Scene {
   }
 
   // ---------- loop ----------
+  // ---------- piloting ----------
+  startFlight() {
+    if (this.piloting || !this.hangarPad) return;
+    this.piloting = true; this.hangarShip.setVisible(false);
+    const s = this.add.image(this.hangarPad.x, this.hangarPad.y - 10, 'ship_hero').setOrigin(0.5, 0.5).setDepth(5000);
+    this.fly = { s, vx: 0, vy: 0, t: 0 };
+    this.player.setVisible(false); this.playerShadow.setVisible(false); this.player.body.enable = false;
+    const cam = this.cameras.main; cam.setBounds(FLY_B[0], FLY_B[1], FLY_B[2] - FLY_B[0], FLY_B[3] - FLY_B[1]); cam.startFollow(s, true, 0.1, 0.1);
+    ui.toast('Pilotezi Meridian. E = aterizează lângă hangar');
+  }
+  endFlight() {
+    const f = this.fly; if (!f) return;
+    f.s.destroy(); this.fly = null; this.piloting = false; this.hangarShip.setVisible(true);
+    this.player.setVisible(true); this.playerShadow.setVisible(true); this.player.body.enable = true;
+    this.player.setPosition(this.hangarPad.x - 56, this.hangarPad.y + 4); this.player.setVelocity(0);
+    const cam = this.cameras.main; cam.setBounds(-300, -300, WW + 600, WH + 600); cam.startFollow(this.player, true, 0.12, 0.12);
+    ui.toast('Ai aterizat');
+  }
+  flightUpdate(delta) {
+    const f = this.fly, dt = delta / 1000; let vx = controls.x, vy = controls.y; const len = Math.hypot(vx, vy);
+    if (len > 1) { vx /= len; vy /= len; }
+    f.vx += (vx * FLY - f.vx) * Math.min(1, dt * 3.2); f.vy += (vy * FLY - f.vy) * Math.min(1, dt * 3.2);
+    f.t += dt; const s = f.s;
+    s.x = Phaser.Math.Clamp(s.x + f.vx * dt, FLY_B[0] + 60, FLY_B[2] - 60); s.y = Phaser.Math.Clamp(s.y + f.vy * dt, FLY_B[1] + 40, FLY_B[3] - 40) ;
+    if (Math.abs(f.vx) > 8) s.setFlipX(f.vx < 0);
+    s.y += Math.sin(f.t * 3) * 0.12;                       // slight hover
+    const near = Math.hypot(s.x - this.hangarPad.x, s.y - this.hangarPad.y) < 90;
+    ui.prompt(near ? '[E] Aterizează' : null);
+    if (controls.takeAction() && near) this.endFlight();
+    controls.takeFlash();
+  }
   update(time, delta) {
     controls.update();
     const p = this.player;
@@ -316,6 +347,7 @@ export default class Station extends Phaser.Scene {
     }
     const dbg = controls.debugEnergy(); if (dbg !== null) setEnergy(dbg);
     tick(delta);
+    if (this.piloting) { this.flightUpdate(delta); this.storyAcc += delta; if (this.storyAcc > 500) { this.storyAcc = 0; updateStory(ui); } this.drawDarkness(time); return; }
     if (S.energy < 50 && !this.flashAuto) { this.flashAuto = true; this.flashlight = true; }
     if (S.energy >= 50) this.flashAuto = false;
     if (controls.takeFlash()) { this.flashlight = !this.flashlight; this.flashAuto = true; if (this.flashlight) S.flags.flashUsed = true; }
