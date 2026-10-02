@@ -34,7 +34,7 @@ for x in range(tx0 + 10, tx1, 22): d.line((x, ty0, x, ty1), fill=(200, 255, 220,
 add_glow(im, 160, 60, 120, (40, 200, 90), 0.5)
 # left incubators column
 for i, (c, y) in enumerate((('4aff6a', 70), ('ffd84a', 118), ('3fe8ff', 166), ('4aff6a', 214))):
-    s = spr('incubator_' + c, 46); shadow(im, 30 + s.width // 2, y + s.height - 2, 18, 4, .5); paste(im, s, 12, y)
+    s = spr('incubator_' + c, 46, sat=2.4); shadow(im, 30 + s.width // 2, y + s.height - 2, 18, 4, .5); paste(im, s, 12, y)
     add_glow(im, 12 + s.width // 2, y + s.height // 2, 34, {'4aff6a': (40, 200, 80), 'ffd84a': (230, 190, 40), '3fe8ff': (40, 200, 230)}[c], 0.22)
 # planters
 def planter(x, y, w, h, rim, glowc, plants):
@@ -62,11 +62,11 @@ ast = atlas('odysseus_eva_down_idle_0'); ax, ay = 148, 156; shadow(im, ax + ast.
 # vignette
 a = np.asarray(im.convert('RGB')).astype(float); y, x = np.ogrid[:H, :W]; v = np.clip((np.maximum(abs(x - W / 2) / (W / 2), abs(y - H / 2) / (H / 2)) - .7) / .3, 0, 1) ** 2
 a *= (1 - .45 * v[..., None]); im = Image.fromarray(a.astype(np.uint8)).convert('RGBA')
-K = 3; big = im.resize((W * K, H * K), Image.NEAREST).convert('RGBA'); d = ImageDraw.Draw(big, 'RGBA'); G = (60, 230, 120)
-hud_panel(d, (26, 22, 400, 92), accent=G); d.text((78, 34), 'HYDROPONICS', font=font(19), fill=(235, 255, 240)); d.text((330, 34), '78%', font=font(19), fill=(235, 255, 240))
-d.rectangle((78, 64, 316, 74), outline=G + (255,)); d.rectangle((78, 64, 78 + int(238 * .78), 74), fill=G + (255,)); d.polygon([(40, 56), (52, 36), (62, 56), (52, 66)], fill=G + (255,))
-hud_panel(d, (W * K - 270, 14, W * K - 14, 196), accent=G); d.text((W * K - 252, 24), 'HARVEST', font=font(15), fill=(235, 255, 240))
+from pixui import *
+G = (60, 230, 120); WH = (255, 255, 255); TX = (235, 255, 245); W_, H_ = im.size
+pbox(im, 8, 7, 134, 31, G); ptri(im, 13, 11, G, 7); ptext(im, 26, 9, 'HYDROPONICS', WH, 10); ptext(im, 126, 9, '78%', WH, 10, 'r'); pbar(im, 26, 21, 98, 4, .78, G)
+pbox(im, 206, 5, 316, 66, G); ptext(im, 212, 8, 'HARVEST', WH, 8)
 for i, (t, v, c) in enumerate((('Alien Flora', '12', (80, 220, 90)), ('Crystal Buds', '8', (240, 220, 80)), ('Bio Fuel', '5', (230, 200, 60)), ('Food', '3', (240, 170, 60)))):
-    yy = 56 + i * 32; d.polygon([(W * K - 250, yy + 18), (W * K - 242, yy), (W * K - 234, yy + 18)], fill=c + (255,)); d.text((W * K - 218, yy), t, font=font(15, False), fill=(235, 255, 245)); d.text((W * K - 52, yy), v, font=font(16), fill=(255, 255, 255))
-caption_bar(big, '2.  FARMING ÎN SPAȚIU', 'Cultivă plante extraterestre, cristale și resurse rare.', 'Folosește-le pentru combustibil, hrană și upgrade-uri.', h=84, accent=G)
-big.convert('RGB').save(os.path.join(OUT, 'hydro.png')); im.convert('RGB').save(os.path.join(OUT, 'hydro_native.png')); print('ok')
+    yy = 20 + i * 11; ptri(im, 211, yy, c, 6); ptext(im, 221, yy, t, TX, 8); ptext(im, 310, yy, v, WH, 8, 'r')
+pcaption(im, '2.  FARMING ÎN SPAȚIU', 'Cultivă plante extraterestre, cristale și resurse rare.', 'Folosește-le pentru combustibil, hrană și upgrade-uri.', G)
+im.convert('RGB').save(os.path.join(OUT, 'hydro_raw.png')); print('ok')

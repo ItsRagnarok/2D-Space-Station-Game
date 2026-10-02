@@ -52,7 +52,7 @@ for cx, cy in ((PX + 16, PY + 16), (PX + PW - 30, PY + 16), (PX + 16, PY + PH - 
     d.rectangle((cx, cy, cx + 13, cy + 1), fill=(255, 230, 140, 255)); d.rectangle((cx, cy, cx + 1, cy + 13), fill=(255, 230, 140, 255))
 d.text((PX + PW - 54, PY + PH - 38), '03', font=ImageFont.truetype(FD + 'DejaVuSansMono-Bold.ttf', 15), fill=(255, 200, 70, 255))
 # freighter
-ship = spr('ship_freighter', 76); sx = PX + (PW - ship.width) // 2 - 6; sy = PY + (PH - ship.height) // 2 - 2
+ship = spr('ship_freighter', 76); sx = PX + (PW - ship.width) // 2 - 16; sy = PY + (PH - ship.height) // 2 - 2
 shadow(im, sx + ship.width // 2, sy + ship.height - 6, ship.width // 2 - 8, 11, .5)
 add_glow(im, sx + 8, sy + ship.height - 26, 34, (50, 110, 255), 1.0); add_glow(im, sx + 30, sy + ship.height - 10, 30, (50, 110, 255), 1.0)
 paste(im, ship, sx, sy)
@@ -64,12 +64,12 @@ for x0, y0 in ((44, 152), (230, 190)):
 for lx, ly in ((56, 66), (244, 66), (56, 206), (244, 206), (150, 60)): add_glow(im, lx, ly, 26, OR, .35); d.rectangle((lx - 1, ly - 1, lx + 1, ly + 1), fill=(255, 230, 150, 255))
 a_ = np.asarray(im.convert('RGB')).astype(float); y, x = np.ogrid[:H, :W]; v = np.clip((np.maximum(abs(x - W / 2) / (W / 2), abs(y - H / 2) / (H / 2)) - .72) / .28, 0, 1) ** 2
 a_ *= (1 - .45 * v[..., None]); im = Image.fromarray(a_.astype(np.uint8)).convert('RGBA')
-K = 3; big = im.resize((W * K, H * K), Image.NEAREST).convert('RGBA'); d = ImageDraw.Draw(big, 'RGBA'); C = (47, 229, 190)
-cx0, cy0, cx1, cy1 = W * K - 250, 70, W * K - 14, 330
-hud_panel(d, (cx0, cy0, cx1, cy1), accent=C); d.text((cx0 + 16, cy0 + 10), 'ARRIVAL', font=font(17), fill=(120, 255, 235)); d.text((cx0 + 70, cy0 + 40), 'Freighter-7', font=font(17), fill=(235, 255, 250))
-d.line((cx0 + 12, cy0 + 78, cx1 - 12, cy0 + 78), fill=C + (255,), width=2); d.text((cx0 + 16, cy0 + 88), 'Cargo:', font=font(14, False), fill=(150, 200, 195))
+from pixui import *
+C = (47, 229, 190); WH = (255, 255, 255); TX = (235, 255, 245); W_, H_ = im.size
+pbox(im, 237, 23, 316, 120, C); ptext(im, 243, 27, 'ARRIVAL', (120, 255, 235), 8); ptext(im, 248, 38, 'Freighter-7', WH, 10)
+ImageDraw.Draw(im).line((241, 52, 312, 52), fill=C + (255,)); ptext(im, 243, 55, 'Cargo:', (150, 200, 195), 8)
 for i, (t, v, c) in enumerate((('Iron', '120', (150, 160, 175)), ('Silicon', '60', (240, 190, 60)), ('Food', '40', (240, 170, 60)))):
-    yy = cy0 + 118 + i * 38; d.rectangle((cx0 + 16, yy + 2, cx0 + 34, yy + 20), fill=c + (255,)); d.text((cx0 + 46, yy), t, font=font(16, False), fill=(235, 255, 250)); d.text((cx1 - 56, yy), v, font=font(16), fill=(235, 255, 250))
-d.line((cx0 + 12, cy1 - 40, cx1 - 12, cy1 - 40), fill=C + (255,), width=2); d.text((cx0 + 16, cy1 - 32), 'Docking...', font=font(15, False), fill=(120, 255, 235))
-caption_bar(big, '4.  NAVE CARE VIN ȘI PLEACĂ', 'Primești nave comerciale, cu resurse, misiuni sau cereri speciale.', 'Fii pregătit și gestionează spațiul de andocare.', h=84, accent=C)
-big.convert('RGB').save(os.path.join(OUT, 'hangar.png')); im.convert('RGB').save(os.path.join(OUT, 'hangar_native.png')); print('ok')
+    yy = 66 + i * 12; psq(im, 243, yy + 1, c, 6); ptext(im, 252, yy, t, TX, 8); ptext(im, 310, yy, v, WH, 8, 'r')
+ImageDraw.Draw(im).line((241, 104, 312, 104), fill=C + (255,)); ptext(im, 243, 106, 'Docking...', (120, 255, 235), 8)
+pcaption(im, '4.  NAVE CARE VIN ȘI PLEACĂ', 'Primești nave comerciale, cu resurse, misiuni sau cereri speciale.', 'Fii pregătit și gestionează spațiul de andocare.', C)
+im.convert('RGB').save(os.path.join(OUT, 'hangar_raw.png')); print('ok')

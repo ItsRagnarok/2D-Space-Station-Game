@@ -40,14 +40,12 @@ add_glow(im, sx + 2, sy + 28, 30, (50, 110, 255), 1.0); add_glow(im, sx + 10, sy
 paste(im, sh, sx, sy)
 # mining beam
 for i in range(0, 40, 2): d.point((sx + sh.width - 2 + i, sy + 10 + i // 5), fill=(120, 255, 190, 255))
-# upscale + HUD
-big = im.resize((W * 3, H * 3), Image.NEAREST).convert('RGBA'); d = ImageDraw.Draw(big, 'RGBA'); G = (60, 230, 120)
-hud_panel(d, (28, 26, 330, 160), accent=G); d.text((60, 36), 'ACTIVE MISSION', font=font(14), fill=(120, 255, 180))
-d.text((42, 66), 'Asteroid Mining', font=font(18), fill=(255, 255, 255))
-for i, t in enumerate(('Collect 0/20 Rare Ore', 'Return to station', 'Time: 2h 30m')):
-    yy = 100 + i * 20; d.ellipse((44, yy + 2, 56, yy + 14), outline=(240, 200, 60, 255), width=2); d.text((66, yy), t, font=font(14, False), fill=(235, 255, 245))
-hud_panel(d, (640, 462, 934, 590), accent=G); d.text((660, 470), 'REWARD', font=font(14), fill=(120, 255, 180))
+from pixui import *
+G = (60, 230, 120); WH = (255, 255, 255); TX = (235, 255, 245)
+pbox(im, 8, 8, 116, 68, G); ptext(im, 14, 9, 'ACTIVE MISSION', (120, 255, 180), 10); ptext(im, 14, 21, 'Asteroid Mining', WH, 12)
+for i, t in enumerate(('Collect 0/20 Rare Ore', 'Return to station', 'Time: 2h 30m')): pcircle(im, 14, 37 + i * 10, (240, 200, 60), s=6); ptext(im, 24, 34 + i * 10, t, TX, 10)
+pbox(im, 212, 138, 312, 194, G); ptext(im, 218, 142, 'REWARD', (120, 255, 180), 8)
 for i, (t, v, c) in enumerate((('Rare Ore', '20', (90, 200, 255)), ('Credits', '1.5k', (240, 190, 60)), ('XP', '250', (240, 190, 60)))):
-    yy = 500 + i * 26; d.rectangle((660, yy + 2, 674, yy + 16), fill=c); d.text((686, yy), t, font=font(14, False), fill=(235, 255, 245)); d.text((868, yy), v, font=font(14), fill=(255, 255, 255))
-caption_bar(big, '3.  MISIUNI ȘI EXPLORARE', 'Trimite nave pe planete, asteroizi sau stații abandonate.', 'Descoperă resurse, artefacte și noi forme de viață.', h=78, accent=G)
-big.convert('RGB').save(os.path.join(OUT, 'mining.png')); im.convert('RGB').save(os.path.join(OUT, 'mining_native.png')); print('ok')
+    yy = 154 + i * 11; psq(im, 218, yy + 1, c, 6); ptext(im, 229, yy, t, TX, 8); ptext(im, 304, yy, v, WH, 8, 'r')
+pcaption(im, '3.  MISIUNI ȘI EXPLORARE', 'Trimite nave pe planete, asteroizi sau stații abandonate.', 'Descoperă resurse, artefacte și noi forme de viață.', G)
+im.convert('RGB').save(os.path.join(OUT, 'mining_raw.png')); print('ok')

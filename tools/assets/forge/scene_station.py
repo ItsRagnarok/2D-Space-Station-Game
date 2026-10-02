@@ -68,11 +68,12 @@ for _ in range(30):
 # vignette
 a = np.asarray(im.convert('RGB')).astype(float); y, x = np.ogrid[:H, :W]; v = np.clip((np.maximum(abs(x - W / 2) / (W / 2), abs(y - H / 2) / (H / 2)) - .75) / .25, 0, 1) ** 2
 a *= (1 - .4 * v[..., None]); im = Image.fromarray(a.astype(np.uint8)).convert('RGBA')
-K = 3; big = im.resize((W * K, H * K), Image.NEAREST).convert('RGBA'); d = ImageDraw.Draw(big, 'RGBA'); G = (60, 230, 160)
-hud_panel(d, (22, 20, 350, 190), accent=G); d.text((72, 30), 'ORBITAL STATION', font=font(17), fill=(235, 255, 240)); d.rectangle((72, 62, 330, 70), outline=G + (255,)); d.rectangle((72, 62, 72 + 200, 70), fill=G + (255,))
+from pixui import *
+G = (60, 230, 160); WH = (255, 255, 255); TX = (235, 255, 245); W_, H_ = im.size
+pbox(im, 7, 7, 117, 63, G); ptext(im, 14, 9, 'ORBITAL STATION', WH, 8); pbar(im, 14, 20, 94, 3, .78, G)
 for i, (t, v, c) in enumerate((('Energy', '78%', (240, 220, 60)), ('Crew', '12/14', (80, 230, 120)), ('Resources', '4.2k', (240, 190, 60)))):
-    yy = 88 + i * 30; d.rectangle((40, yy + 2, 54, yy + 18), fill=c + (255,)); d.text((68, yy), t, font=font(15, False), fill=(235, 255, 245)); d.text((250, yy), v, font=font(15), fill=(255, 255, 255))
+    yy = 28 + i * 11; psq(im, 13, yy + 1, c, 6); ptext(im, 23, yy, t, TX, 8); ptext(im, 110, yy, v, WH, 8, 'r')
 for i, t in enumerate(('FARMING', 'MISSIONS', 'SHIPS', 'RESEARCH', 'STATION')):
-    y0 = 24 + i * 60; hud_panel(d, (W * K - 112, y0, W * K - 10, y0 + 46), accent=G, r=6); d.text((W * K - 104, y0 + 14), t, font=font(13), fill=(235, 255, 245))
-caption_bar(big, '1.  STAȚIA TA SPAȚIALĂ', 'Administrează și extinde stația. Construiește camere noi,', 'optimizează producția și pregătește-te pentru misiuni.', h=78, accent=G)
-big.convert('RGB').save(os.path.join(OUT, 'station.png')); im.convert('RGB').save(os.path.join(OUT, 'station_native.png')); print('ok')
+    y0 = 8 + i * 19; pbox(im, W_ - 50, y0, W_ - 5, y0 + 15, G); ptext(im, W_ - 27, y0 + 3, t, TX, 8, 'm')
+pcaption(im, '1.  STAȚIA TA SPAȚIALĂ', 'Administrează și extinde stația. Construiește camere noi,', 'optimizează producția și pregătește-te pentru misiuni.', G)
+im.convert('RGB').save(os.path.join(OUT, 'station_raw.png')); print('ok')

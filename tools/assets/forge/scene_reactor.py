@@ -47,12 +47,12 @@ for x in (6, 308): add_glow(im, x, 8, 16, (255, 60, 60), .6); d.rectangle((x - 1
 # stronger vignette = the station is losing power
 a_ = np.asarray(im.convert('RGB')).astype(float); y, x = np.ogrid[:H, :W]; dd = np.sqrt(((x - cx) / (W * .55)) ** 2 + ((y - cy) / (H * .6)) ** 2); v = np.clip((dd - .35) / .65, 0, 1) ** 1.6
 a_ *= (1 - .72 * v[..., None]); im = Image.fromarray(a_.astype(np.uint8)).convert('RGBA')
-K = 3; big = im.resize((W * K, H * K), Image.NEAREST).convert('RGBA'); d = ImageDraw.Draw(big, 'RGBA')
-hud_panel(d, (26, 22, 380, 112), accent=CY); d.text((60, 32), 'REACTOR CORE', font=font(18), fill=(235, 255, 250)); d.text((300, 32), '42%', font=font(18), fill=(255, 220, 120))
-d.rectangle((60, 66, 340, 78), outline=CY + (255,)); d.rectangle((60, 66, 60 + int(280 * .42), 78), fill=(255, 200, 70, 255)); d.text((60, 86), 'Energy dropping  -1% / 3 s', font=font(12, False), fill=(255, 190, 130))
-hud_panel(d, (W * K - 250, 22, W * K - 14, 200), accent=CY); d.text((W * K - 232, 32), 'FUEL', font=font(15), fill=(235, 255, 250))
+from pixui import *
+CY = (60, 230, 230); WH = (255, 255, 255); TX = (235, 255, 245); W_, H_ = im.size
+pbox(im, 8, 7, 134, 40, CY); ptext(im, 14, 9, 'REACTOR CORE', WH, 10); ptext(im, 128, 9, '42%', (255, 220, 120), 10, 'r'); pbar(im, 14, 22, 114, 4, .42, (255, 200, 70)); ptext(im, 14, 28, 'Energy -1% / 3 s', (255, 190, 130), 10)
+pbox(im, 194, 7, 316, 66, CY); ptext(im, 200, 8, 'Fuel', WH, 10)
 for i, (t, v, c, g) in enumerate((('Crystal Buds', '+20%', (60, 160, 255), 'x2'), ('Rare Ore', '+30%', (200, 80, 255), 'x1'), ('Bio Fuel', '+10%', (240, 200, 60), 'x3'))):
-    yy = 66 + i * 40; d.polygon([(W * K - 230, yy + 22), (W * K - 220, yy), (W * K - 210, yy + 22)], fill=c + (255,)); d.text((W * K - 196, yy), t, font=font(14, False), fill=(235, 255, 245)); d.text((W * K - 196, yy + 18), g, font=font(11, False), fill=(160, 200, 200)); d.text((W * K - 84, yy + 2), v, font=font(15), fill=(255, 255, 255))
-d.rounded_rectangle((330, H * K - 150, 630, H * K - 100), 8, fill=(4, 22, 24, 232), outline=CY + (255,), width=2); d.text((350, H * K - 138), '[E]  Alimentează reactorul', font=font(15), fill=(235, 255, 250))
-caption_bar(big, '0.  INIMA STAȚIEI', 'Reactorul pierde energie fără oprire. Fără el, stația se stinge.', 'Hrănește-l cu cristale înainte să rămâi doar cu lanterna.', h=84, accent=CY)
-big.convert('RGB').save(os.path.join(OUT, 'reactor.png')); im.convert('RGB').save(os.path.join(OUT, 'reactor_native.png')); print('ok')
+    yy = 22 + i * 14; ptri(im, 200, yy, c, 6); ptext(im, 210, yy - 2, t, TX, 10); ptext(im, 310, yy - 2, v, WH, 10, 'r')
+pbox(im, 92, H_ - 62, 228, H_ - 46, CY); ptext(im, 160, H_ - 60, '[E] Alimentează reactorul', TX, 10, 'm')
+pcaption(im, '0.  INIMA STAȚIEI', 'Reactorul pierde energie fără oprire. Fără el, stația se stinge.', 'Hrănește-l cu cristale înainte să rămâi doar cu lanterna.', CY)
+im.convert('RGB').save(os.path.join(OUT, 'reactor_raw.png')); print('ok')

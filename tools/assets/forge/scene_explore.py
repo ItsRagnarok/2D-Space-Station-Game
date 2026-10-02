@@ -58,29 +58,21 @@ for ox, oy, sx_, sy_ in ((0, 0, 1, 1), (38, 0, -1, 1), (0, 40, 1, -1), (38, 40, 
 a = np.asarray(im.convert('RGB')).astype(float); y, x = np.ogrid[:H, :W]; v = np.clip((np.maximum(abs(x - W / 2) / (W / 2), abs(y - H / 2) / (H / 2)) - .65) / .35, 0, 1) ** 2
 a *= (1 - 0.5 * v[..., None]); im = Image.fromarray(a.astype(np.uint8)).convert('RGBA')
 # HUD at 3x
-K = 3; big = im.resize((W * K, H * K), Image.NEAREST).convert('RGBA'); d = ImageDraw.Draw(big, 'RGBA'); G = (60, 230, 120)
-hud_panel(d, (14, 14, 290, 196), accent=G); d.text((30, 24), 'EXPLORATION MISSION', font=font(15), fill=(230, 255, 240))
+from pixui import *
+G = (60, 230, 120); WH = (255, 255, 255); TX = (235, 255, 245); W_, H_ = im.size
+pbox(im, 4, 4, 126, 84, G); ptext(im, 10, 6, 'Exploration Mission', WH, 10)
 rows = (('Scan the area', None, True), ('Collect 3/6 crystals', .5, False), ('Harvest alien flora', .33, False), ('Return to station', None, False))
-yy = 54
+yy = 21
 for t, p, done in rows:
-    d.ellipse((28, yy, 44, yy + 16), outline=G + (255,), width=2)
-    if done: d.line((32, yy + 8, 36, yy + 12), fill=G + (255,), width=2); d.line((36, yy + 12, 42, yy + 4), fill=G + (255,), width=2)
-    d.text((54, yy - 1), t, font=font(14, False), fill=(235, 255, 245))
-    if p: d.rectangle((54, yy + 20, 220, yy + 24), outline=G + (255,)); d.rectangle((54, yy + 20, 54 + int(166 * p), yy + 24), fill=G + (255,)); d.text((230, yy + 14), '3/6' if p > .4 else '1/3', font=font(11, False), fill=(200, 255, 220))
-    yy += 26 if not p else 36
-hud_panel(d, (W * K - 220, 14, W * K - 14, 150), accent=G); d.ellipse((W * K - 80, 26, W * K - 36, 70), fill=(80, 40, 120, 255))
-for (x, y) in ((W * K - 190, 100), (W * K - 150, 50), (W * K - 100, 112)): d.ellipse((x - 6, y - 6, x + 6, y + 6), fill=(240, 220, 60, 255))
-d.line((W * K - 190, 100, W * K - 150, 50), fill=(240, 220, 60, 255)); d.line((W * K - 150, 50, W * K - 100, 112), fill=(240, 220, 60, 255))
-hud_panel(d, (W * K - 120, 168, W * K - 14, 330), accent=G)
-for i, (c, t) in enumerate(((90, '4/6'), (210, '1/2'), (110, '2/4'))):
-    yy = 184 + i * 48; d.polygon([(W * K - 100, yy + 28), (W * K - 90, yy), (W * K - 80, yy + 28)], fill=(60, 160, 255, 255) if i == 0 else ((200, 60, 230, 255) if i == 1 else (80, 230, 90, 255)))
-    d.text((W * K - 64, yy + 4), t, font=font(18), fill=(235, 255, 245))
-hud_panel(d, (14, H * K - 130, 300, H * K - 14), accent=G)
-for i, (p, t) in enumerate(((1.0, '100%'), (.85, '85%'))):
-    yy = H * K - 112 + i * 34; d.rectangle((110, yy + 4, 250, yy + 16), outline=G + (255,)); d.rectangle((110, yy + 4, 110 + int(140 * p), yy + 16), fill=G + (255,)); d.text((258, yy), t, font=font(13), fill=(235, 255, 245))
-d.text((110, H * K - 44), '12°C', font=font(16), fill=(235, 255, 245)); d.polygon([(40, H * K - 112), (52, H * K - 80), (28, H * K - 80)], fill=G + (255,)); d.rectangle((34, H * K - 80, 46, H * K - 40), fill=G + (255,))
-hud_panel(d, (W * K - 320, H * K - 104, W * K - 14, H * K - 14), accent=G); d.line((W * K - 160, H * K - 104, W * K - 160, H * K - 14), fill=G + (255,), width=2)
-d.polygon([(W * K - 296, H * K - 50), (W * K - 282, H * K - 90), (W * K - 268, H * K - 50)], fill=(60, 160, 255, 255)); d.text((W * K - 248, H * K - 76), 'CRYSTAL', font=font(13), fill=(235, 255, 245)); d.text((W * K - 248, H * K - 56), '+1', font=font(16), fill=(255, 255, 255))
-pts = [(W * K - 150 + i * 6, H * K - 60 - int(math.sin(i * .5) * 14 * (1 if i % 7 else 1.6))) for i in range(24)]
-d.line(pts, fill=G + (255,), width=2)
-big.convert('RGB').save(os.path.join(OUT, 'explore.png')); im.convert('RGB').save(os.path.join(OUT, 'explore_native.png')); print('ok')
+    pcircle(im, 10, yy + 1, G, filled=done, s=6); ptext(im, 20, yy - 2, t, TX, 10)
+    if p: pbar(im, 20, yy + 9, 80, 3, p, G); ptext(im, 120, yy + 6, '3/6' if p > .4 else '1/3', (200, 255, 220), 10, 'r')
+    yy += 12 if not p else 20
+pbox(im, 246, 4, 316, 52, G); pcircle(im, 296, 10, (150, 70, 220), filled=True, s=10)
+for (x, y) in ((254, 38), (270, 18), (286, 40)): psq(im, x, y, (240, 220, 60), 4)
+pbox(im, 282, 58, 316, 112, G)
+for i, (c, t) in enumerate((((60, 160, 255), '4/6'), ((200, 60, 230), '1/2'), ((80, 230, 90), '2/4'))):
+    yy = 63 + i * 16; ptri(im, 287, yy, c, 7); ptext(im, 298, yy + 2, t, WH, 8)
+pbox(im, 4, 164, 116, 208, G); ptri(im, 11, 172, G, 9); pbar(im, 30, 172, 48, 3, 1.0, G); ptext(im, 110, 168, '100%', TX, 10, 'r'); pbar(im, 30, 184, 48, 3, .85, G); ptext(im, 110, 180, '85%', TX, 10, 'r'); ptext(im, 30, 194, '12°C', TX, 10)
+pbox(im, 196, 172, 316, 209, G); ImageDraw.Draw(im).line((254, 172, 254, 209), fill=G + (255,)); ptri(im, 203, 182, (60, 160, 255), 7); ptext(im, 214, 178, 'Crystal', TX, 10); ptext(im, 214, 190, '+1', WH, 10)
+ImageDraw.Draw(im).line([(260 + i * 2, 192 - int(math.sin(i * .5) * 5 * (1 if i % 7 else 1.6))) for i in range(22)], fill=G + (255,))
+im.convert('RGB').save(os.path.join(OUT, 'explore_raw.png')); print('ok')
