@@ -177,6 +177,56 @@ def b_flower(color='#f0c020', seed=1):
     for x, y, z in ((0, 0, 0.55), (0.28, 0.1, 0.45), (-0.25, 0.15, 0.4)): sph((x, y, z), 0.22, m, (1, 1, 0.5), 14)
     render('flower_%s' % color.strip('#'), 1.9, center=(0, 0, 0.35))
 
+def b_ship_hero():
+    random.seed(11)
+    PL = mat(hexc('#d6d6e2'), 0.3, 0.6); PL2 = mat(hexc('#a8a8ba'), 0.35, 0.6); GM = mat(hexc('#23252f'), 0.7, 0.45); GM2 = mat(hexc('#3a3d4a'), 0.7, 0.4)
+    YL = mat(hexc('#e9b61c'), 0.2, 0.5); OR = mat(hexc('#ff8a14'), 0.2, 0.5); WH = mat(hexc('#e8e8f0'), 0.3, 0.5); BK = mat(hexc('#0c0c12'), 0.3, 0.6)
+    RING = glow('#27a0ff', 8); WIN = glow('#ff8a14', 9); GLASS = mat(hexc('#10141c'), 0.9, 0.12)
+    # hull core + layered top plates
+    box((0, 0, 0.1), (4.4, 2.1, 1.8), PL2, 0.05)
+    for i, x in enumerate((-1.5, -0.1, 1.3)): box((x, 0.1, 0.9), (1.34, 1.85, 0.3), PL, 0.05)
+    box((0.8, -0.55, 0.62), (2.8, 0.9, 0.35), PL, 0.05)
+    # side wall plates with windows (camera side = -Y)
+    for x in (-1.5, -0.2, 1.1): box((x, -1.06, 0.15), (1.2, 0.1, 0.9), PL, 0.04)
+    for x in (-1.5, -0.2, 1.1):
+        for k in range(random.randint(2, 4)): box((x + random.uniform(-0.45, 0.45), -1.14, random.uniform(-0.15, 0.45)), (0.12, 0.05, 0.12), WIN, 0.004)
+        for k in range(3): box((x + random.uniform(-0.5, 0.5), -1.13, random.uniform(-0.2, 0.5)), (0.07, 0.04, 0.07), BK, 0.004)
+    box((0.9, -1.1, -0.45), (2.2, 0.08, 0.28), GLASS, 0.01)
+    for i in range(7): box((0.0 + i * 0.28, -1.15, -0.45), (0.09, 0.04, 0.12), WIN, 0.003)
+    # lower cargo + hazard cylinder + orange belly box
+    box((0.2, 0, -1.0), (3.8, 1.9, 0.5), GM2, 0.05)
+    cyl((0.4, -1.12, -1.0), 0.32, 3.0, WH, rot=(0, math.pi / 2, 0), v=20)
+    for i in range(9): cyl((-0.9 + i * 0.36, -1.12, -1.0), 0.335, 0.17, OR if i % 2 == 0 else YL, rot=(0, math.pi / 2, 0), v=20)
+    box((0.9, -0.2, -1.4), (1.3, 1.0, 0.3), mat(hexc('#ff9a1a'), 0.1, 0.4, hexc('#ff8a14'), 3), 0.04)
+    # nose: stepped yellow wedge + dark windscreen
+    box((2.75, 0, -0.05), (1.0, 2.0, 1.5), YL, 0.07); box((3.3, 0, -0.1), (0.9, 1.6, 1.2), YL, 0.07); box((3.75, 0, -0.15), (0.7, 1.15, 0.85), YL, 0.07)
+    box((3.1, -0.05, 0.7), (1.1, 1.3, 0.3), GLASS, 0.05); box((3.62, -0.9, 0.0), (0.5, 0.06, 0.5), GLASS, 0.03); box((2.3, 0, 0.3), (0.3, 1.9, 1.3), mat(hexc('#2a2d38'), 0.5, 0.5), 0.04)
+    for k in range(3): box((3.0 + k * 0.4, -1.03 - 0.0, -0.5), (0.3, 0.05, 0.12), mat(hexc('#2a2418'), 0.3, 0.6), 0.004)
+    # top turret + barrel with red tip
+    cyl((1.7, 0.75, 1.2), 0.38, 0.45, GM, v=20); cyl((1.7, 0.75, 1.5), 0.3, 0.2, GM2, v=20)
+    cyl((2.5, 0.75, 1.5), 0.1, 1.0, WH, rot=(0, math.pi / 2, 0), v=12); cyl((3.05, 0.75, 1.5), 0.11, 0.18, mat(hexc('#e0242a'), 0.2, 0.5, hexc('#e0242a'), 2), rot=(0, math.pi / 2, 0), v=12)
+    # striped rod (upper rear)
+    cyl((-1.7, 0.55, 1.35), 0.27, 2.6, WH, rot=(0, math.pi / 2, 0), v=20)
+    for i in range(7): cyl((-2.7 + i * 0.37, 0.55, 1.35), 0.285, 0.15, OR, rot=(0, math.pi / 2, 0), v=20)
+    # engines (near big, far smaller) with glowing rings
+    cyl((-2.9, -0.55, -0.15), 0.98, 2.7, GM, rot=(0, math.pi / 2, 0), v=28)
+    for dx in (-1.6, -0.9, -0.2, 0.5): cyl((-2.9 + dx + 0.6, -0.55, -0.15), 1.0, 0.1, GM2, rot=(0, math.pi / 2, 0), v=28)
+    cyl((-4.28, -0.55, -0.15), 0.86, 0.12, GM2, rot=(0, math.pi / 2, 0), v=28); cyl((-4.36, -0.55, -0.15), 0.82, 0.05, RING, rot=(0, math.pi / 2, 0), v=28); cyl((-4.41, -0.55, -0.15), 0.66, 0.05, glow('#1646d8', 3), rot=(0, math.pi / 2, 0), v=28); cyl((-4.44, -0.55, -0.15), 0.24, 0.05, glow('#7ac4ff', 7), rot=(0, math.pi / 2, 0), v=28); cyl((-4.38, -0.55, -0.15), 0.34, 0.06, glow('#58b4ff', 14), rot=(0, math.pi / 2, 0), v=28)
+    cyl((-2.7, 1.0, 0.55), 0.8, 2.4, GM, rot=(0, math.pi / 2, 0), v=28)
+    for dx in (-1.2, -0.5, 0.2): cyl((-2.7 + dx + 0.5, 1.0, 0.55), 0.82, 0.09, GM2, rot=(0, math.pi / 2, 0), v=28)
+    cyl((-3.95, 1.0, 0.55), 0.72, 0.1, GM2, rot=(0, math.pi / 2, 0), v=28); cyl((-4.03, 1.0, 0.55), 0.68, 0.05, RING, rot=(0, math.pi / 2, 0), v=28); cyl((-4.08, 1.0, 0.55), 0.54, 0.05, glow('#1646d8', 3), rot=(0, math.pi / 2, 0), v=28); cyl((-4.11, 1.0, 0.55), 0.2, 0.05, glow('#7ac4ff', 7), rot=(0, math.pi / 2, 0), v=28); cyl((-4.05, 1.0, 0.55), 0.28, 0.06, glow('#58b4ff', 14), rot=(0, math.pi / 2, 0), v=28)
+    for x in (-1.5, -0.1, 1.3): box((x, -0.6, 1.05), (1.2, 0.5, 0.12), PL, 0.03)
+    box((2.0, -0.35, 1.02), (0.6, 0.7, 0.16), PL2, 0.03); box((-1.0, -1.1, 0.75), (0.6, 0.06, 0.4), mat(hexc('#14213a'), 0.5, 0.3, hexc('#2a6aff'), 1.2), 0.01)
+    for i in range(16): box((random.uniform(-1.9, 2.0), random.uniform(-1.0, 1.0), 1.12), (random.uniform(0.08, 0.3), random.uniform(0.08, 0.25), 0.06), random.choice([BK, WIN, GM2, PL2, OR]), 0.004)
+    for i in range(10): box((random.uniform(-1.8, 1.8), -1.15, random.uniform(-0.3, 0.7)), (random.uniform(0.08, 0.2), 0.05, random.uniform(0.06, 0.16)), random.choice([BK, WIN, GM2]), 0.004)
+    # small thruster + rear greebles
+    cyl((-2.2, -1.1, -1.05), 0.24, 1.0, GM, rot=(0, math.pi / 2, 0), v=16); cyl((-2.75, -1.1, -1.05), 0.2, 0.1, RING, rot=(0, math.pi / 2, 0), v=16)
+    for i in range(10): box((random.uniform(-1.8, 1.8), random.uniform(-0.8, 0.9), 1.08), (random.uniform(0.1, 0.22), random.uniform(0.1, 0.22), 0.05), random.choice([BK, WIN, GM2]), 0.004)
+    bpy.ops.object.empty_add(location=(0, 0, 0)); em = bpy.context.object
+    for o in [o for o in bpy.data.objects if o.type == 'MESH']: o.parent = em
+    em.scale = (0.78, 1.0, 1.1)
+    render('ship_hero', 10.4, elev=33, yaw=-26, center=(-0.2, 0, 0.2), res=1024, key=4.6)
+
 BUILD = {
  'cabinets': lambda: None,
 }
@@ -195,7 +245,7 @@ for c in ('#f0c020', '#c04cff', '#ff6a3a'): JOBS.append(('flower_%s' % c.strip('
 JOBS += [('rosette_8a3ad0_1', lambda: b_rosette('#8a3ad0', '#e08aff', 1)), ('rosette_2fbf5a_2', lambda: b_rosette('#2fbf5a', '#b8ff4a', 2, 11))]
 JOBS += [('mushroom_ff8a2a', lambda: b_mushroom('#ff8a2a')), ('mushroom_3fffe6', lambda: b_mushroom('#3fffe6'))]
 for s in range(1, 9): JOBS.append(('asteroid_%d' % s, (lambda s=s: b_asteroid(s))))
-JOBS += [('ship_freighter', lambda: b_ship('freighter')), ('ship_explorer', lambda: b_ship('explorer', '#f4f6fa', '#f08a1a', '#7dff7d', 0.75, -30, False))]
+JOBS += [('ship_hero', b_ship_hero), ('ship_freighter', lambda: b_ship('freighter')), ('ship_explorer', lambda: b_ship('explorer', '#f4f6fa', '#f08a1a', '#7dff7d', 0.75, -30, False))]
 
 for name, fn in JOBS:
     if WANT and WANT != ['all'] and not any(name.startswith(w) for w in WANT): continue
