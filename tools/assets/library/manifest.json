@@ -1,0 +1,170 @@
+{
+ "asteroid_1": {
+  "w": 68,
+  "h": 42
+ },
+ "asteroid_2": {
+  "w": 48,
+  "h": 42
+ },
+ "asteroid_3": {
+  "w": 48,
+  "h": 42
+ },
+ "asteroid_4": {
+  "w": 61,
+  "h": 42
+ },
+ "asteroid_5": {
+  "w": 47,
+  "h": 42
+ },
+ "asteroid_6": {
+  "w": 64,
+  "h": 42
+ },
+ "asteroid_7": {
+  "w": 54,
+  "h": 42
+ },
+ "asteroid_8": {
+  "w": 60,
+  "h": 42
+ },
+ "cabinet_1": {
+  "w": 32,
+  "h": 48
+ },
+ "cabinet_2": {
+  "w": 36,
+  "h": 48
+ },
+ "cabinet_3": {
+  "w": 29,
+  "h": 48
+ },
+ "console_1": {
+  "w": 39,
+  "h": 34
+ },
+ "console_2": {
+  "w": 39,
+  "h": 34
+ },
+ "crate_7a8090": {
+  "w": 23,
+  "h": 30
+ },
+ "crate_d4660c": {
+  "w": 23,
+  "h": 30
+ },
+ "crystal_3fa0ff_1": {
+  "w": 26,
+  "h": 32
+ },
+ "crystal_3fa0ff_2": {
+  "w": 16,
+  "h": 32
+ },
+ "crystal_3fff9a_1": {
+  "w": 26,
+  "h": 32
+ },
+ "crystal_3fff9a_2": {
+  "w": 16,
+  "h": 32
+ },
+ "crystal_b44cff_1": {
+  "w": 26,
+  "h": 32
+ },
+ "crystal_b44cff_2": {
+  "w": 16,
+  "h": 32
+ },
+ "flower_c04cff": {
+  "w": 29,
+  "h": 26
+ },
+ "flower_f0c020": {
+  "w": 29,
+  "h": 26
+ },
+ "flower_ff6a3a": {
+  "w": 29,
+  "h": 26
+ },
+ "generator_1": {
+  "w": 39,
+  "h": 38
+ },
+ "incubator_3fe8ff": {
+  "w": 30,
+  "h": 54
+ },
+ "incubator_4aff6a": {
+  "w": 30,
+  "h": 54
+ },
+ "incubator_ffd84a": {
+  "w": 30,
+  "h": 54
+ },
+ "locker": {
+  "w": 24,
+  "h": 44
+ },
+ "mushroom_3fffe6": {
+  "w": 34,
+  "h": 22
+ },
+ "mushroom_ff8a2a": {
+  "w": 34,
+  "h": 22
+ },
+ "reactor_core": {
+  "w": 74,
+  "h": 98
+ },
+ "rosette_1a8a8a_1": {
+  "w": 33,
+  "h": 28
+ },
+ "rosette_2fbf5a_1": {
+  "w": 33,
+  "h": 28
+ },
+ "rosette_2fbf5a_2": {
+  "w": 34,
+  "h": 28
+ },
+ "rosette_8a3ad0_1": {
+  "w": 33,
+  "h": 28
+ },
+ "ship_explorer": {
+  "w": 95,
+  "h": 56
+ },
+ "ship_freighter": {
+  "w": 138,
+  "h": 74
+ },
+ "tank_3a6aa8": {
+  "w": 27,
+  "h": 42
+ },
+ "tank_4a8a5a": {
+  "w": 27,
+  "h": 42
+ },
+ "tentacle_1": {
+  "w": 64,
+  "h": 60
+ },
+ "tentacle_2": {
+  "w": 43,
+  "h": 60
+ }
+}
